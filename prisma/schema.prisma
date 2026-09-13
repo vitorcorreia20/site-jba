@@ -1,0 +1,80 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("POSTGRES_PRISMA_URL")
+  directUrl = env("POSTGRES_URL_NON_POOLING")
+}
+
+// Usuário com acesso ao painel admin (diretoria / comissão)
+model AdminUser {
+  id           String   @id @default(cuid())
+  nome         String
+  email        String   @unique
+  senhaHash    String
+  criadoEm     DateTime @default(now())
+}
+
+// Membro do capítulo: ativo, diretoria ou apenas histórico
+enum TipoMembro {
+  ATIVO
+  DIRETORIA
+}
+
+model Membro {
+  id              String     @id @default(cuid())
+  nome            String
+  fotoUrl         String?
+  tipo            TipoMembro
+  cargoAtual      String? // ex: "1º Conselheiro", "Escrivão"
+  historicoCargos String? // texto livre, um cargo por linha: "2023 - Escrivão\n2024 - Tesoureiro"
+  premios         String? // texto livre, um prêmio por linha
+  ordem           Int        @default(0) // controla a ordem de exibição no quadro
+  ativo           Boolean    @default(true) // permite "desativar" sem apagar o histórico
+  criadoEm        DateTime   @default(now())
+  atualizadoEm    DateTime   @updatedAt
+}
+
+// Mestre Conselheiro histórico, para o Quadro de Lideranças
+model MestreConselheiro {
+  id        String   @id @default(cuid())
+  nome      String
+  fotoUrl   String?
+  periodo   String // ex: "2023" ou "2023/2024"
+  ordem     Int      @default(0)
+  criadoEm  DateTime @default(now())
+}
+
+// Solicitação enviada pelo formulário "Quero fazer parte"
+enum StatusAdmissao {
+  PENDENTE
+  EM_ANALISE
+  APROVADO
+  RECUSADO
+}
+
+model SolicitacaoAdmissao {
+  id             String          @id @default(cuid())
+  nomeCompleto   String
+  dataNascimento DateTime
+  email          String
+  telefone       String
+  responsavel    String? // nome do responsável, se o candidato for menor
+  cidade         String
+  mensagem       String? // motivação / como conheceu o capítulo
+  status         StatusAdmissao  @default(PENDENTE)
+  notasComissao  String? // anotações internas da comissão de análise
+  criadoEm       DateTime        @default(now())
+  atualizadoEm   DateTime        @updatedAt
+}
+
+// Fotos de ações do capítulo exibidas na Home
+model FotoAcao {
+  id        String   @id @default(cuid())
+  url       String
+  legenda   String?
+  ordem     Int      @default(0)
+  criadoEm  DateTime @default(now())
+}
