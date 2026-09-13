@@ -3,12 +3,13 @@ import { prisma } from "@/lib/prisma";
 
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const dados = await request.json();
 
   const membro = await prisma.membro.update({
-    where: { id: params.id },
+    where: { id },
     data: {
       nome: dados.nome,
       fotoUrl: dados.fotoUrl || null,
@@ -26,8 +27,9 @@ export async function PATCH(
 
 export async function DELETE(
   _request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  await prisma.membro.delete({ where: { id: params.id } });
+  const { id } = await params;
+  await prisma.membro.delete({ where: { id } });
   return NextResponse.json({ ok: true });
 }
