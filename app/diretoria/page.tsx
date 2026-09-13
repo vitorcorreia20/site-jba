@@ -7,27 +7,31 @@ export const metadata = {
 };
 
 export default async function DiretoriaPage() {
-  const membros = await prisma.membro
+  const raw = await prisma.membro
     .findMany({
       where: { tipo: "DIRETORIA", ativo: true },
-      orderBy: { ordem: "asc" },
+      include: { premios: { orderBy: { ordem: "asc" } } },
     })
     .catch(() => []);
+  const membros = raw.sort((a, b) =>
+    a.idDemolay.localeCompare(b.idDemolay, undefined, { numeric: true })
+  );
 
   return (
     <section className="mx-auto max-w-6xl px-6 py-16">
-      <h1 className="font-display text-4xl text-azul">Diretoria</h1>
-      <p className="mt-4 max-w-prose text-grafite/80">
-        Conheça os membros da diretoria do Capítulo José Barreto de
-        Albuquerque N°512, seu histórico de cargos e as honrarias
-        recebidas.
-      </p>
+      <div className="bg-papel rounded-xl p-6">
+        <h1 className="font-display text-4xl text-vermelho">Diretoria</h1>
+        <p className="mt-4 max-w-prose text-grafite/80">
+          Conheça os membros da diretoria — ordenados por ID DeMolay crescente. Cada prêmio é exibido como imagem.
+        </p>
+      </div>
 
       {membros.length > 0 ? (
         <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {membros.map((membro) => (
             <MemberCard
               key={membro.id}
+              idDemolay={membro.idDemolay}
               nome={membro.nome}
               fotoUrl={membro.fotoUrl}
               cargoAtual={membro.cargoAtual}
@@ -37,9 +41,8 @@ export default async function DiretoriaPage() {
           ))}
         </div>
       ) : (
-        <p className="mt-10 text-grafite/60">
-          Os cards da diretoria aparecerão aqui assim que forem cadastrados
-          pelo painel administrativo.
+        <p className="mt-10 text-papel/80">
+          Os cards da diretoria aparecerão aqui assim que forem cadastrados pelo painel administrativo.
         </p>
       )}
     </section>

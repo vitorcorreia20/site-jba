@@ -1,5 +1,29 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { z } from "zod";
+
+const premioSchema = z.object({
+  imagemUrl: z.string().url("URL da imagem inválida"),
+  legenda: z.string().optional().nullable(),
+  ordem: z.coerce.number().int().optional(),
+});
+
+const patchSchema = z.object({
+  idDemolay: z
+    .string()
+    .trim()
+    .min(5, "ID DeMolay deve ter no mínimo 5 caracteres")
+    .max(9, "ID DeMolay deve ter no máximo 9 caracteres")
+    .regex(/^\d+$/, "ID DeMolay deve conter apenas números")
+    .optional(),
+  nome: z.string().trim().min(1).optional(),
+  fotoUrl: z.string().url().optional().or(z.literal("")).nullable().optional(),
+  tipo: z.enum(["ATIVO", "DIRETORIA"]).optional(),
+  cargoAtual: z.string().optional().nullable(),
+  historicoCargos: z.string().optional().nullable(),
+  premios: z.array(premioSchema).optional(),
+  ativo: z.boolean().optional(),
+});
 
 export async function PATCH(
   request: Request,
@@ -7,22 +31,58 @@ export async function PATCH(
 ) {
   const { id } = await params;
   const dados = await request.json();
+  const parsed = patchSchema.safeParse(dados);
+  if (!parsed.success) {
+    return NextResponse.json(
+      { erro: "Dados inválidos", detalhes: parsed.error.flatten() },
+      { status: 400 }
+    );
+  }
 
-  const membro = await prisma.membro.update({
-    where: { id },
-    data: {
-      nome: dados.nome,
-      fotoUrl: dados.fotoUrl || null,
-      tipo: dados.tipo === "DIRETORIA" ? "DIRETORIA" : "ATIVO",
-      cargoAtual: dados.cargoAtual || null,
-      historicoCargos: dados.historicoCargos || null,
-      premios: dados.premios || null,
-      ordem: dados.ordem !== undefined ? Number(dados.ordem) : undefined,
-      ativo: dados.ativo !== undefined ? Boolean(dados.ativo) : undefined,
-    },
-  });
+  const { premios, ...rest } = parsed.data;
 
-  return NextResponse.json(membro);
+  try {
+    // Se premios foi enviado, substitui todos (delete + create)
+    if (premios !== undefined) {
+      await prisma.premio.deleteMany({ where: { membroId: id } });
+    }
+
+    const membro = await prisma.membro.update({
+      where: { id },
+      data: {
+        ...(rest.idDemolay !== undefined ? { idDemolay: rest.idDemolay.trim() } : {}),
+        ...(rest.nome !== undefined ? { nome: rest.nome } : {}),
+        ...(rest.fotoUrl !== undefined ? { fotoUrl: rest.fotoUrl || null } : {}),
+        ...(rest.tipo !== undefined ? { tipo: rest.tipo } : {}),
+        ...(rest.cargoAtual !== undefined ? { cargoAtual: rest.cargoAtual || null } : {}),
+        ...(rest.historicoCargos !== undefined ? { historicoCargos: rest.historicoCargos || null } : {}),
+        ...(rest.ativo !== undefined ? { ativo: rest.ativo } : {}),
+        ...(premios !== undefined
+          ? {
+              premios: {
+                create: premios.map((p, idx) => ({
+                  imagemUrl: p.imagemUrl,
+                  legenda: p.legenda || null,
+                  ordem: p.ordem ?? idx,
+                })),
+              },
+            }
+          : {}),
+      },
+      include: { premios: { orderBy: { ordem: "asc" } } },
+    });
+
+    return NextResponse.json(membro);
+  } catch (e: unknown) {
+    const err = e as { code?: string };
+    if (err.code === "P2002") {
+      return NextResponse.json(
+        { erro: "Já existe um membro com este ID DeMolay" },
+        { status: 409 }
+      );
+    }
+    throw e;
+  }
 }
 
 export async function DELETE(

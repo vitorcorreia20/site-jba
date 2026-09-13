@@ -9,7 +9,7 @@ const links = [
 
 export default function Header() {
   return (
-    <header className="bg-azul text-papel border-b border-dourado/30">
+    <header className="bg-vermelho-escuro text-papel border-b border-dourado/30">
       <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-6 py-4">
         <Link href="/" className="flex items-center gap-3">
           <span
@@ -31,7 +31,7 @@ export default function Header() {
               <li key={link.href}>
                 <Link
                   href={link.href}
-                  className="block rounded px-3 py-2 transition-colors hover:bg-azul-claro"
+                  className="block rounded px-3 py-2 transition-colors hover:bg-vermelho-claro"
                 >
                   {link.label}
                 </Link>

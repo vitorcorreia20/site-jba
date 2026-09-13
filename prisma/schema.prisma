@@ -25,16 +25,28 @@ enum TipoMembro {
 
 model Membro {
   id              String     @id @default(cuid())
+  idDemolay       String     @unique
   nome            String
   fotoUrl         String?
   tipo            TipoMembro
   cargoAtual      String? // ex: "1º Conselheiro", "Escrivão"
   historicoCargos String? // texto livre, um cargo por linha: "2023 - Escrivão\n2024 - Tesoureiro"
-  premios         String? // texto livre, um prêmio por linha
-  ordem           Int        @default(0) // controla a ordem de exibição no quadro
   ativo           Boolean    @default(true) // permite "desativar" sem apagar o histórico
+  premios         Premio[]
   criadoEm        DateTime   @default(now())
   atualizadoEm    DateTime   @updatedAt
+}
+
+model Premio {
+  id        String   @id @default(cuid())
+  membroId  String
+  membro    Membro   @relation(fields: [membroId], references: [id], onDelete: Cascade)
+  imagemUrl String
+  legenda   String?
+  ordem     Int      @default(0)
+  criadoEm  DateTime @default(now())
+
+  @@index([membroId])
 }
 
 // Mestre Conselheiro histórico, para o Quadro de Lideranças

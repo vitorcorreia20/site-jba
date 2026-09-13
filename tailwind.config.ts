@@ -10,6 +10,11 @@ const config: Config = {
           escuro: "#0C182F",
           claro: "#233B6E",
         },
+        vermelho: {
+          DEFAULT: "#9B1B30",
+          escuro: "#7A1426",
+          claro: "#B91C3A",
+        },
         dourado: {
           DEFAULT: "#C9A227",
           claro: "#E4C25C",

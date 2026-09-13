@@ -12,7 +12,7 @@ export default async function HomePage() {
   return (
     <>
       {/* Hero */}
-      <section className="bg-azul text-papel">
+      <section className="bg-vermelho-escuro text-papel">
         <div className="mx-auto max-w-6xl px-6 py-20">
           <p className="font-display italic text-dourado-claro text-lg">
             Ordem DeMolay
@@ -34,8 +34,8 @@ export default async function HomePage() {
       </section>
 
       {/* História */}
-      <section className="mx-auto max-w-6xl px-6 py-16">
-        <h2 className="font-display text-3xl text-azul">Nossa história</h2>
+      <section className="mx-auto max-w-6xl px-6 py-16 bg-papel rounded-t-3xl -mt-6 relative">
+        <h2 className="font-display text-3xl text-vermelho">Nossa história</h2>
         <div className="mt-6 max-w-prose space-y-4 text-grafite/90">
           <p>
             [Espaço reservado para a história do Capítulo José Barreto de
@@ -65,7 +65,7 @@ export default async function HomePage() {
                   key={foto.id}
                   className="overflow-hidden rounded border border-black/5"
                 >
-                  <div className="relative aspect-[4/3] w-full bg-azul/5">
+                  <div className="relative aspect-[4/3] w-full bg-vermelho/5">
                     <Image
                       src={foto.url}
                       alt={foto.legenda ?? "Ação do capítulo"}
