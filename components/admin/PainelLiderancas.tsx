@@ -43,7 +43,7 @@ export default function PainelLiderancas() {
   return (
     <div className="grid gap-10 lg:grid-cols-2">
       <div>
-        <h2 className="font-display text-xl text-azul">
+        <h2 className="font-display text-xl text-vermelho">
           Novo Mestre Conselheiro
         </h2>
         <form onSubmit={handleSubmit} className="mt-4 space-y-3">
@@ -86,7 +86,7 @@ export default function PainelLiderancas() {
           </div>
           <button
             type="submit"
-            className="rounded bg-azul px-4 py-2 text-sm font-medium text-papel hover:bg-azul-claro"
+            className="rounded bg-vermelho px-4 py-2 text-sm font-medium text-papel hover:bg-vermelho-claro"
           >
             Adicionar
           </button>
@@ -94,7 +94,7 @@ export default function PainelLiderancas() {
       </div>
 
       <div>
-        <h2 className="font-display text-xl text-azul">
+        <h2 className="font-display text-xl text-vermelho">
           Mestres cadastrados
         </h2>
         <ul className="mt-4 space-y-2">

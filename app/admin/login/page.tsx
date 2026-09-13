@@ -33,7 +33,7 @@ export default function LoginAdminPage() {
 
   return (
     <section className="mx-auto max-w-sm px-6 py-20">
-      <h1 className="font-display text-3xl text-azul">Painel admin</h1>
+      <h1 className="font-display text-3xl text-vermelho">Painel admin</h1>
       <p className="mt-2 text-sm text-grafite/70">
         Acesso restrito à diretoria e comissão de análise.
       </p>
@@ -48,7 +48,7 @@ export default function LoginAdminPage() {
             name="email"
             type="email"
             required
-            className="mt-1 w-full rounded border border-grafite/20 px-3 py-2 focus:border-azul focus:outline-none"
+            className="mt-1 w-full rounded border border-grafite/20 px-3 py-2 focus:border-vermelho focus:outline-none"
           />
         </div>
         <div>
@@ -60,7 +60,7 @@ export default function LoginAdminPage() {
             name="senha"
             type="password"
             required
-            className="mt-1 w-full rounded border border-grafite/20 px-3 py-2 focus:border-azul focus:outline-none"
+            className="mt-1 w-full rounded border border-grafite/20 px-3 py-2 focus:border-vermelho focus:outline-none"
           />
         </div>
 
@@ -73,7 +73,7 @@ export default function LoginAdminPage() {
         <button
           type="submit"
           disabled={carregando}
-          className="w-full rounded bg-azul px-4 py-2 font-medium text-papel hover:bg-azul-claro disabled:opacity-60"
+          className="w-full rounded bg-vermelho px-4 py-2 font-medium text-papel hover:bg-vermelho-claro disabled:opacity-60"
         >
           {carregando ? "Entrando..." : "Entrar"}
         </button>

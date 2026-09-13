@@ -123,7 +123,7 @@ export default function PainelMembros() {
   return (
     <div className="grid gap-10 lg:grid-cols-2">
       <div>
-        <h2 className="font-display text-xl text-azul">Novo membro</h2>
+        <h2 className="font-display text-xl text-vermelho">Novo membro</h2>
         <p className="text-xs text-grafite/60">ID DeMolay entre 5 e 9 dígitos. Ordenação é automática por ID crescente.</p>
         <form onSubmit={handleSubmit} className="mt-4 space-y-3">
           <CampoTexto label="ID DeMolay *" name="idDemolay" required placeholder="114329" type="text" />
@@ -187,7 +187,7 @@ export default function PainelMembros() {
       </div>
 
       <div>
-        <h2 className="font-display text-xl text-azul">Membros cadastrados (ordem crescente por ID)</h2>
+        <h2 className="font-display text-xl text-vermelho">Membros cadastrados (ordem crescente por ID)</h2>
         <ul className="mt-4 space-y-2">
           {membros?.map((m) => (
             <li key={m.id} className="flex flex-col gap-1 rounded border border-grafite/10 bg-white px-4 py-3 text-sm">

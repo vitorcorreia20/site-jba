@@ -44,7 +44,7 @@ export default function FormularioAdmissao() {
         role="status"
         className="rounded border border-dourado/40 bg-dourado/10 p-6"
       >
-        <p className="font-display text-xl text-azul">
+        <p className="font-display text-xl text-vermelho">
           Solicitação enviada.
         </p>
         <p className="mt-2 text-grafite/80">
@@ -83,7 +83,7 @@ export default function FormularioAdmissao() {
           id="mensagem"
           name="mensagem"
           rows={4}
-          className="mt-1 w-full rounded border border-grafite/20 px-3 py-2 focus:border-azul focus:outline-none"
+          className="mt-1 w-full rounded border border-grafite/20 px-3 py-2 focus:border-vermelho focus:outline-none"
         />
       </div>
 
@@ -96,7 +96,7 @@ export default function FormularioAdmissao() {
       <button
         type="submit"
         disabled={status === "enviando"}
-        className="rounded bg-azul px-6 py-3 font-medium text-papel transition-colors hover:bg-azul-claro disabled:opacity-60"
+        className="rounded bg-vermelho px-6 py-3 font-medium text-papel transition-colors hover:bg-vermelho-claro disabled:opacity-60"
       >
         {status === "enviando" ? "Enviando..." : "Enviar solicitação"}
       </button>
@@ -126,7 +126,7 @@ function Campo({
         name={name}
         type={type}
         required={required}
-        className="mt-1 w-full rounded border border-grafite/20 px-3 py-2 focus:border-azul focus:outline-none"
+        className="mt-1 w-full rounded border border-grafite/20 px-3 py-2 focus:border-vermelho focus:outline-none"
       />
     </div>
   );

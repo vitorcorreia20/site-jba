@@ -14,7 +14,7 @@ export default async function AdminPage() {
     <section className="mx-auto max-w-6xl px-6 py-12">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="font-display text-3xl text-azul">Painel admin</h1>
+          <h1 className="font-display text-3xl text-vermelho">Painel admin</h1>
           <p className="text-sm text-grafite/60">
             Logado como {session?.user?.name ?? session?.user?.email}
           </p>

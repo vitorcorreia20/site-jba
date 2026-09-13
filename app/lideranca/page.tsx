@@ -13,7 +13,7 @@ export default async function LiderancaPage() {
 
   return (
     <section className="mx-auto max-w-4xl px-6 py-16">
-      <h1 className="font-display text-4xl text-azul">
+      <h1 className="font-display text-4xl text-vermelho">
         Quadro de lideranças
       </h1>
       <p className="mt-4 max-w-prose text-grafite/80">
@@ -31,7 +31,7 @@ export default async function LiderancaPage() {
               />
               <div className="flex items-center gap-4">
                 {mestre.fotoUrl && (
-                  <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-full border border-azul/20">
+                  <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-full border border-vermelho/20">
                     <Image
                       src={mestre.fotoUrl}
                       alt={mestre.nome}
@@ -41,7 +41,7 @@ export default async function LiderancaPage() {
                   </div>
                 )}
                 <div>
-                  <p className="font-display text-lg text-azul">
+                  <p className="font-display text-lg text-vermelho">
                     {mestre.nome}
                   </p>
                   <p className="text-sm text-grafite/60">{mestre.periodo}</p>

@@ -51,7 +51,7 @@ export default function PainelSolicitacoes() {
         <div key={s.id} className="rounded border border-grafite/10 p-4">
           <div className="flex flex-wrap items-start justify-between gap-2">
             <div>
-              <p className="font-medium text-azul">{s.nomeCompleto}</p>
+              <p className="font-medium text-vermelho">{s.nomeCompleto}</p>
               <p className="text-sm text-grafite/60">
                 {s.email} · {s.telefone} · {s.cidade}
               </p>

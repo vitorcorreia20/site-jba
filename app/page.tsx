@@ -26,7 +26,7 @@ export default async function HomePage() {
           </p>
           <Link
             href="/quero-fazer-parte"
-            className="mt-8 inline-block rounded bg-dourado px-6 py-3 font-medium text-azul-escuro transition-colors hover:bg-dourado-claro"
+            className="mt-8 inline-block rounded bg-dourado px-6 py-3 font-medium text-vermelho-escuro transition-colors hover:bg-dourado-claro"
           >
             Quero fazer parte
           </Link>
@@ -52,7 +52,7 @@ export default async function HomePage() {
       {/* Fotos de ações */}
       <section className="bg-white py-16">
         <div className="mx-auto max-w-6xl px-6">
-          <h2 className="font-display text-3xl text-azul">Nossas ações</h2>
+          <h2 className="font-display text-3xl text-vermelho">Nossas ações</h2>
           <p className="mt-2 max-w-prose text-grafite/70">
             Registros de atividades, eventos e trabalhos comunitários do
             capítulo.
@@ -93,7 +93,7 @@ export default async function HomePage() {
       {/* Apoio */}
       <section className="bg-dourado/10">
         <div className="mx-auto max-w-6xl px-6 py-16">
-          <h2 className="font-display text-3xl text-azul">Apoie o capítulo</h2>
+          <h2 className="font-display text-3xl text-vermelho">Apoie o capítulo</h2>
           <p className="mt-4 max-w-prose text-grafite/90">
             O trabalho do Capítulo José Barreto de Albuquerque N°512 é
             mantido com o apoio de familiares, ex-membros e da comunidade.

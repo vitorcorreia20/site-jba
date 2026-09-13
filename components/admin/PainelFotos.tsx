@@ -42,7 +42,7 @@ export default function PainelFotos() {
   return (
     <div className="grid gap-10 lg:grid-cols-2">
       <div>
-        <h2 className="font-display text-xl text-azul">Nova foto de ação</h2>
+        <h2 className="font-display text-xl text-vermelho">Nova foto de ação</h2>
         <p className="mt-1 text-sm text-grafite/60">
           Envie a foto para o Vercel Blob (ou outro serviço) e cole a URL
           pública aqui.
@@ -79,7 +79,7 @@ export default function PainelFotos() {
           </div>
           <button
             type="submit"
-            className="rounded bg-azul px-4 py-2 text-sm font-medium text-papel hover:bg-azul-claro"
+            className="rounded bg-vermelho px-4 py-2 text-sm font-medium text-papel hover:bg-vermelho-claro"
           >
             Adicionar foto
           </button>
@@ -87,7 +87,7 @@ export default function PainelFotos() {
       </div>
 
       <div>
-        <h2 className="font-display text-xl text-azul">Fotos cadastradas</h2>
+        <h2 className="font-display text-xl text-vermelho">Fotos cadastradas</h2>
         <ul className="mt-4 space-y-2">
           {fotos?.map((f: Foto) => (
             <li

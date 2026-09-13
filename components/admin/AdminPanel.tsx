@@ -27,8 +27,8 @@ export default function AdminPanel() {
             onClick={() => setAbaAtiva(aba.id)}
             className={`rounded-t px-4 py-2 text-sm font-medium transition-colors ${
               abaAtiva === aba.id
-                ? "border-b-2 border-dourado text-azul"
-                : "text-grafite/60 hover:text-azul"
+                ? "border-b-2 border-dourado text-vermelho"
+                : "text-grafite/60 hover:text-vermelho"
             }`}
           >
             {aba.label}
