@@ -11,24 +11,11 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        // user retornado por authorize já contém papel
         const u = user as unknown as { papel?: string };
         if (u.papel) token.papel = u.papel;
-        // fallback: busca papel se não veio no user (ex refresh)
-        else if (token.email) {
-          const dbUser = await prisma.adminUser.findUnique({
-            where: { email: String(token.email).toLowerCase() },
-            select: { papel: true },
-          });
-          if (dbUser) token.papel = dbUser.papel;
-        }
-      } else if (token.email && !token.papel) {
-        const dbUser = await prisma.adminUser.findUnique({
-          where: { email: String(token.email).toLowerCase() },
-          select: { papel: true },
-        });
-        if (dbUser) token.papel = dbUser.papel;
+        // não consultar Prisma em edge – papel já vem do authorize e fica no JWT
       }
+      // mantém papel do token; tokens antigos sem papel exigirão novo login
       return token;
     },
     async session({ session, token }) {

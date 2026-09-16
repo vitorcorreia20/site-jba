@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import AdminPanel from "@/components/admin/AdminPanel";
@@ -9,7 +10,10 @@ export const metadata = {
 
 export default async function AdminPage() {
   const session = await getServerSession(authOptions);
-  const papel = (session?.user as unknown as { papel?: string })?.papel ?? "COMISSAO";
+  if (!session?.user) {
+    redirect("/admin/login?callbackUrl=/admin");
+  }
+  const papel = (session.user as unknown as { papel?: string })?.papel ?? "COMISSAO";
   const isDiretoria = papel === "DIRETORIA";
 
   return (

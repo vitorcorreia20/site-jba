@@ -21,12 +21,16 @@ export default withAuth(
   },
   {
     callbacks: {
-      authorized: ({ token }) => !!token,
+      authorized: ({ token, req }) => {
+        // libera /admin/login sempre
+        if (req.nextUrl.pathname.startsWith("/admin/login")) return true;
+        return !!token;
+      },
     },
     pages: { signIn: "/admin/login" },
   }
 );
 
 export const config = {
-  matcher: ["/admin/((?!login).*)", "/api/admin/:path*"],
+  matcher: ["/admin", "/admin/:path*", "/api/admin/:path*"],
 };
