@@ -2,13 +2,71 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --paper: #FAFAF7;
+  --paper-2: #F2EFE7;
+  --paper-3: #EDE9E0;
+  --ink: #1A1E26;
+  --ink-soft: rgba(26, 30, 38, 0.72);
+  --ink-faint: rgba(26, 30, 38, 0.08);
+  --ink-border: rgba(26, 30, 38, 0.1);
+  --crimson: #7A1426;
+  --crimson-2: #9B1B30;
+  --crimson-deep: #4F0E1C;
+  --crimson-soft: #B91C3A;
+  --gold: #C9A227;
+  --gold-light: #E4C25C;
+  --gold-faint: rgba(201, 162, 39, 0.14);
+  --gold-border: rgba(201, 162, 39, 0.28);
+  --radius: 18px;
+  --radius-pill: 999px;
+  --shadow: 0 12px 32px rgba(26, 30, 38, 0.1);
+  --shadow-strong: 0 24px 48px rgba(79, 14, 28, 0.18);
+}
+
 html {
   scroll-behavior: smooth;
 }
 
 body {
-  background-color: #fafaf7;
-  color: #20232b;
+  background-color: var(--paper);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Grain texture global */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.035;
+  z-index: 9999;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.92' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+}
+
+/* Skip link */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: auto;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+.skip-link:focus {
+  left: 1rem;
+  top: 1rem;
+  width: auto;
+  height: auto;
+  z-index: 100;
+  background: var(--gold);
+  color: var(--crimson-deep);
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-weight: 600;
+  outline: 2px solid var(--crimson-deep);
+  outline-offset: 2px;
 }
 
 /* Foco visível para navegação por teclado */
@@ -17,8 +75,85 @@ button:focus-visible,
 input:focus-visible,
 textarea:focus-visible,
 select:focus-visible {
-  outline: 2px solid #c9a227;
+  outline: 2px solid var(--gold);
   outline-offset: 2px;
+}
+
+/* Hairline dividers */
+.hairline {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--gold-border) 20%,
+    var(--gold-border) 80%,
+    transparent 100%
+  );
+}
+
+.hairline-double {
+  position: relative;
+  height: 1px;
+  background: var(--gold-border);
+}
+.hairline-double::after {
+  content: "";
+  position: absolute;
+  top: 6px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--gold-border);
+}
+
+.divider-diamond {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  color: var(--gold);
+}
+.divider-diamond::before,
+.divider-diamond::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--gold-border);
+}
+.divider-diamond span {
+  font-size: 0.6rem;
+  line-height: 1;
+  transform: rotate(45deg);
+}
+
+/* Numeral watermark */
+.numeral-watermark {
+  font-family: var(--font-fraunces), serif;
+  font-weight: 900;
+  line-height: 0.8;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Animations - purposeful & sparse */
+@keyframes heroIn {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.hero-in {
+  animation: heroIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.hero-in-2 {
+  animation: heroIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.12s both;
+}
+.hero-in-3 {
+  animation: heroIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.24s both;
 }
 
 @media (prefers-reduced-motion: reduce) {

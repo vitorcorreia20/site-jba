@@ -7,8 +7,8 @@ export const dynamic = 'force-dynamic';
 const solicitacaoSchema = z.object({
   nomeCompleto: z.string().min(3, "Informe o nome completo"),
   dataNascimento: z.string().min(1, "Informe a data de nascimento"),
-  email: z.string().email("E-mail inválido"),
-  telefone: z.string().min(8, "Informe um telefone válido"),
+  email: z.string().email("E-mail inválido").optional().or(z.literal("")).or(z.null()),
+  telefone: z.string().min(8, "Informe um WhatsApp válido"),
   responsavel: z.string().optional(),
   cidade: z.string().min(2, "Informe a cidade"),
   mensagem: z.string().optional(),
@@ -32,7 +32,7 @@ export async function POST(request: Request) {
       data: {
         nomeCompleto: dados.nomeCompleto,
         dataNascimento: new Date(dados.dataNascimento),
-        email: dados.email,
+        email: dados.email?.trim() ? dados.email.trim() : null,
         telefone: dados.telefone,
         responsavel: dados.responsavel || null,
         cidade: dados.cidade,

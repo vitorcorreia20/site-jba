@@ -8,12 +8,18 @@ datasource db {
   directUrl = env("POSTGRES_URL_NON_POOLING")
 }
 
+enum PapelAdmin {
+  DIRETORIA
+  COMISSAO
+}
+
 // Usuário com acesso ao painel admin (diretoria / comissão)
 model AdminUser {
   id           String   @id @default(cuid())
   nome         String
   email        String   @unique
   senhaHash    String
+  papel        PapelAdmin @default(COMISSAO)
   criadoEm     DateTime @default(now())
 }
 
@@ -71,8 +77,8 @@ model SolicitacaoAdmissao {
   id             String          @id @default(cuid())
   nomeCompleto   String
   dataNascimento DateTime
-  email          String
-  telefone       String
+  email          String?         // legado nullable; novos cadastros null (contato via WhatsApp/telefone)
+  telefone       String          // WhatsApp com DDD
   responsavel    String? // nome do responsável, se o candidato for menor
   cidade         String
   mensagem       String? // motivação / como conheceu o capítulo

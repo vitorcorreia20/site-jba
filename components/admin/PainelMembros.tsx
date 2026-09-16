@@ -27,13 +27,14 @@ export default function PainelMembros() {
   const [premiosDraft, setPremiosDraft] = useState<PremioDraft[]>([]);
   const [erro, setErro] = useState<string | null>(null);
   const [ok, setOk] = useState<string | null>(null);
+  const [removerAlvo, setRemoverAlvo] = useState<Membro | null>(null);
+  const [confirmNome, setConfirmNome] = useState("");
 
   function recarregar() {
     fetch("/api/admin/membros")
       .then((r) => r.json())
       .then((data) => {
         if (Array.isArray(data)) {
-          // garante ordenação crescente por idDemolay (string numérica)
           setMembros(
             [...data].sort((a: Membro, b: Membro) =>
               a.idDemolay.localeCompare(b.idDemolay, undefined, { numeric: true })
@@ -77,7 +78,6 @@ export default function PainelMembros() {
       .filter((p) => p.imagemUrl.length > 0)
       .map((p, idx) => ({ imagemUrl: p.imagemUrl, legenda: p.legenda, ordem: idx }));
 
-    // validação simples de URL
     for (const p of premios) {
       try {
         new URL(p.imagemUrl);
@@ -104,7 +104,7 @@ export default function PainelMembros() {
     });
     const json = await resp.json();
     if (!resp.ok) {
-      setErro(json.erro || json.detalhes ? JSON.stringify(json.detalhes) : "Erro ao criar membro");
+      setErro(json.erro || (json.detalhes ? JSON.stringify(json.detalhes) : "Erro ao criar membro"));
       return;
     }
 
@@ -114,23 +114,34 @@ export default function PainelMembros() {
     recarregar();
   }
 
-  async function remover(id: string) {
-    if (!confirm("Remover membro?")) return;
-    await fetch(`/api/admin/membros/${id}`, { method: "DELETE" });
+  async function confirmarRemover() {
+    if (!removerAlvo) return;
+    if (confirmNome.trim() !== removerAlvo.nome.trim()) {
+      setErro(`Digite exatamente "${removerAlvo.nome}" para confirmar.`);
+      return;
+    }
+    await fetch(`/api/admin/membros/${removerAlvo.id}`, { method: "DELETE" });
+    setRemoverAlvo(null);
+    setConfirmNome("");
+    setErro(null);
     recarregar();
   }
 
   return (
-    <div className="grid gap-10 lg:grid-cols-2">
-      <div>
-        <h2 className="font-display text-xl text-vermelho">Novo membro</h2>
-        <p className="text-xs text-grafite/60">ID DeMolay entre 5 e 9 dígitos. Ordenação é automática por ID crescente.</p>
+    <div className="grid gap-8 lg:grid-cols-2">
+      <div className="rounded-[16px] border border-[var(--ink-faint)] bg-[var(--paper)] p-5">
+        <h2 className="font-display text-[15px] font-semibold text-[var(--crimson)]">Novo membro</h2>
+        <p className="text-xs leading-relaxed text-[var(--ink)]/50">
+          ID DeMolay 5–9 dígitos. Ordenação automática por ID. Use a confirmação por nome ao remover.
+        </p>
         <form onSubmit={handleSubmit} className="mt-4 space-y-3">
           <CampoTexto label="ID DeMolay *" name="idDemolay" required placeholder="114329" type="text" />
           <CampoTexto label="Nome *" name="nome" required placeholder="Vitor dos Santos Correia" />
           <div>
-            <label className="block text-sm font-medium text-grafite">Tipo de quadro</label>
-            <select name="tipo" className="mt-1 w-full rounded border border-grafite/20 px-3 py-2">
+            <label className="block text-[11px] font-semibold uppercase tracking-wide text-[var(--ink)]">
+              Tipo de quadro
+            </label>
+            <select name="tipo" className="mt-1.5 w-full rounded-[12px] border border-[var(--ink-faint)] bg-white px-3 py-2.5 text-sm focus:border-[var(--gold)] focus:outline-none focus:ring-2 focus:ring-[var(--gold-faint)]">
               <option value="ATIVO">Quadro de ativos</option>
               <option value="DIRETORIA">Diretoria (aparece com card)</option>
             </select>
@@ -139,37 +150,53 @@ export default function PainelMembros() {
           <CampoTexto label="Cargo atual" name="cargoAtual" placeholder="Mestre Conselheiro" />
           <CampoTextarea label="Histórico de cargos (um por linha)" name="historicoCargos" placeholder={"2024.1 - Hospitaleiro\n2025 - Tesoureiro"} />
 
-          <div className="rounded border border-grafite/15 p-3 bg-white">
+          <div className="rounded-[12px] border border-[var(--ink-faint)] bg-white p-4">
             <div className="flex items-center justify-between">
-              <label className="block text-sm font-medium text-grafite">Prêmios e honrarias — cada um é uma imagem</label>
-              <button type="button" onClick={addPremio} className="text-xs rounded bg-vermelho px-2 py-1 text-papel hover:bg-vermelho-claro">+ Adicionar prêmio</button>
+              <span className="text-[11px] font-semibold uppercase tracking-wide text-[var(--ink)]">
+                Prêmios e honrarias — cada um é uma imagem
+              </span>
+              <button
+                type="button"
+                onClick={addPremio}
+                className="rounded-full bg-[var(--crimson)] px-3 py-1 text-xs font-semibold text-white hover:bg-[var(--crimson-deep)]"
+              >
+                + Adicionar prêmio
+              </button>
             </div>
-            {premiosDraft.length === 0 && <p className="mt-2 text-xs text-grafite/50">Nenhum prêmio adicionado. Clique em “Adicionar prêmio”.</p>}
+            {premiosDraft.length === 0 && (
+              <p className="mt-2 text-xs text-[var(--ink)]/40">Nenhum prêmio adicionado. Clique em “Adicionar prêmio”.</p>
+            )}
             <div className="mt-3 space-y-3">
               {premiosDraft.map((p, idx) => (
-                <div key={idx} className="rounded border border-grafite/10 p-3">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-xs font-medium text-grafite/70">Prêmio #{idx + 1}</span>
-                    <button type="button" onClick={() => removePremio(idx)} className="text-xs text-red-700 hover:underline">Remover</button>
+                <div key={idx} className="rounded-[12px] border border-[var(--ink-faint)] bg-[var(--paper)] p-3">
+                  <div className="mb-2 flex items-center justify-between">
+                    <span className="text-xs font-semibold text-[var(--ink)]/60">Prêmio #{idx + 1}</span>
+                    <button type="button" onClick={() => removePremio(idx)} className="text-xs font-medium text-red-700 hover:underline">
+                      Remover
+                    </button>
                   </div>
                   <input
                     type="url"
                     placeholder="https://exemplo.com/premio.jpg"
                     value={p.imagemUrl}
                     onChange={(e) => updatePremio(idx, "imagemUrl", e.target.value)}
-                    className="w-full rounded border border-grafite/20 px-3 py-2 text-sm"
+                    className="w-full rounded-[10px] border border-[var(--ink-faint)] bg-white px-3 py-2 text-sm focus:border-[var(--gold)] focus:outline-none focus:ring-2 focus:ring-[var(--gold-faint)]"
                   />
                   <input
                     type="text"
                     placeholder="Legenda (opcional) ex: Chevalier - 2024"
                     value={p.legenda}
                     onChange={(e) => updatePremio(idx, "legenda", e.target.value)}
-                    className="mt-2 w-full rounded border border-grafite/20 px-3 py-2 text-sm"
+                    className="mt-2 w-full rounded-[10px] border border-[var(--ink-faint)] bg-white px-3 py-2 text-sm focus:border-[var(--gold)] focus:outline-none focus:ring-2 focus:ring-[var(--gold-faint)]"
                   />
                   {p.imagemUrl && (
-                    <div className="mt-2 h-20 relative overflow-hidden rounded border border-grafite/10">
-                      {/* preview simples - permite URL externa, não usa next/image aqui */}
-                      <img src={p.imagemUrl} alt={p.legenda || `Prêmio ${idx + 1}`} className="h-full w-full object-contain bg-grafite/5" onError={(e) => ((e.target as HTMLImageElement).style.display = "none")} />
+                    <div className="relative mt-2 h-20 overflow-hidden rounded-[8px] border border-[var(--ink-faint)] bg-[var(--paper-2)]">
+                      <img
+                        src={p.imagemUrl}
+                        alt={p.legenda || `Prêmio ${idx + 1}`}
+                        className="h-full w-full object-contain"
+                        onError={(e) => ((e.target as HTMLImageElement).style.display = "none")}
+                      />
                     </div>
                   )}
                 </div>
@@ -177,47 +204,108 @@ export default function PainelMembros() {
             </div>
           </div>
 
-          {erro && <p className="text-sm text-red-700 bg-red-50 border border-red-200 rounded px-3 py-2">{erro}</p>}
-          {ok && <p className="text-sm text-green-700 bg-green-50 border border-green-200 rounded px-3 py-2">{ok}</p>}
+          {erro && <p className="rounded-[10px] border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{erro}</p>}
+          {ok && <p className="rounded-[10px] border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-700">{ok}</p>}
 
-          <button type="submit" className="w-full rounded bg-vermelho px-4 py-2 text-sm font-medium text-papel hover:bg-vermelho-claro">
+          <button type="submit" className="w-full rounded-full bg-[var(--crimson)] px-4 py-2.5 text-sm font-semibold text-white shadow-soft hover:bg-[var(--crimson-deep)]">
             Adicionar membro
           </button>
         </form>
       </div>
 
       <div>
-        <h2 className="font-display text-xl text-vermelho">Membros cadastrados (ordem crescente por ID)</h2>
+        <h2 className="font-display text-[15px] font-semibold text-[var(--crimson)]">
+          Membros cadastrados ({membros?.length ?? 0})
+        </h2>
+        <p className="text-xs text-[var(--ink)]/40">Ordem crescente por ID. Excluir exige digitar o nome exato.</p>
         <ul className="mt-4 space-y-2">
           {membros?.map((m) => (
-            <li key={m.id} className="flex flex-col gap-1 rounded border border-grafite/10 bg-white px-4 py-3 text-sm">
+            <li key={m.id} className="rounded-[12px] border border-[var(--ink-faint)] bg-white px-4 py-3 shadow-sm">
               <div className="flex items-start justify-between gap-2">
-                <span className="font-medium text-grafite">
-                  <span className="inline-block rounded bg-vermelho/10 text-vermelho px-1.5 py-0.5 text-xs mr-2">#{m.idDemolay}</span>
+                <span className="font-medium text-[var(--ink)]">
+                  <span className="mr-2 inline-block rounded-full bg-[var(--crimson)] px-2 py-0.5 text-xs font-bold text-white">
+                    #{m.idDemolay}
+                  </span>
                   {m.nome}
                 </span>
-                <button onClick={() => remover(m.id)} className="shrink-0 text-red-700 hover:underline text-xs">
+                <button
+                  onClick={() => {
+                    setRemoverAlvo(m);
+                    setConfirmNome("");
+                    setErro(null);
+                  }}
+                  className="shrink-0 rounded-full border border-red-200 bg-red-50 px-3 py-1 text-xs font-semibold text-red-700 hover:bg-red-100"
+                >
                   Remover
                 </button>
               </div>
-              <span className="text-xs text-grafite/60">
+              <span className="text-xs text-[var(--ink)]/50">
                 {m.tipo === "ATIVO" ? "Ativo" : "Diretoria"}
                 {m.cargoAtual ? ` · ${m.cargoAtual}` : ""}
                 {m.premios?.length ? ` · ${m.premios.length} prêmio(s)` : ""}
               </span>
               {m.premios && m.premios.length > 0 && (
-                <div className="mt-1 flex gap-1 flex-wrap">
+                <div className="mt-2 flex flex-wrap gap-1">
                   {m.premios.slice(0, 4).map((pr) => (
-                    <img key={pr.id} src={pr.imagemUrl} alt={pr.legenda ?? ""} title={pr.legenda ?? ""} className="h-10 w-10 rounded border border-grafite/10 object-cover" />
+                    <img
+                      key={pr.id}
+                      src={pr.imagemUrl}
+                      alt={pr.legenda ?? ""}
+                      title={pr.legenda ?? ""}
+                      className="h-10 w-10 rounded-[8px] border border-[var(--ink-faint)] object-cover"
+                    />
                   ))}
-                  {m.premios.length > 4 && <span className="text-xs text-grafite/50 self-center">+{m.premios.length - 4}</span>}
+                  {m.premios.length > 4 && (
+                    <span className="self-center text-xs text-[var(--ink)]/40">+{m.premios.length - 4}</span>
+                  )}
                 </div>
               )}
             </li>
           ))}
-          {membros?.length === 0 && <p className="text-grafite/60">Nenhum membro cadastrado ainda.</p>}
+          {membros?.length === 0 && (
+            <li className="rounded-[12px] border border-dashed border-[var(--ink-faint)] bg-[var(--paper)] p-6 text-center text-sm text-[var(--ink)]/50">
+              Nenhum membro cadastrado ainda.
+            </li>
+          )}
         </ul>
       </div>
+
+      {removerAlvo && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-sm rounded-[18px] border border-[var(--ink-faint)] bg-white p-6 shadow-strong">
+            <h3 className="font-display text-base font-semibold text-[var(--crimson)]">Confirmar exclusão</h3>
+            <p className="mt-2 text-sm leading-relaxed text-[var(--ink-soft)]">
+              Digite exatamente <span className="font-semibold text-[var(--ink)]">{removerAlvo.nome}</span> para remover{" "}
+              <span className="rounded-full bg-[var(--crimson)] px-2 py-0.5 text-xs font-bold text-white">#{removerAlvo.idDemolay}</span>.
+            </p>
+            <input
+              value={confirmNome}
+              onChange={(e) => setConfirmNome(e.target.value)}
+              placeholder={removerAlvo.nome}
+              className="mt-4 w-full rounded-[12px] border border-[var(--ink-faint)] bg-white px-3 py-2.5 text-sm focus:border-[var(--gold)] focus:outline-none focus:ring-2 focus:ring-[var(--gold-faint)]"
+              autoFocus
+            />
+            <div className="mt-5 flex justify-end gap-2">
+              <button
+                onClick={() => {
+                  setRemoverAlvo(null);
+                  setConfirmNome("");
+                }}
+                className="rounded-full border border-[var(--ink-faint)] bg-white px-4 py-2 text-xs font-semibold text-[var(--ink)] hover:bg-[var(--paper-2)]"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={confirmarRemover}
+                disabled={confirmNome.trim() !== removerAlvo.nome.trim()}
+                className="rounded-full bg-red-600 px-4 py-2 text-xs font-semibold text-white hover:bg-red-700 disabled:opacity-40"
+              >
+                Remover definitivamente
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -237,13 +325,13 @@ function CampoTexto({
 }) {
   return (
     <div>
-      <label className="block text-sm font-medium text-grafite">{label}</label>
+      <label className="block text-[11px] font-semibold uppercase tracking-wide text-[var(--ink)]">{label}</label>
       <input
         name={name}
         type={type}
         required={required}
         placeholder={placeholder}
-        className="mt-1 w-full rounded border border-grafite/20 px-3 py-2 placeholder:text-grafite/40"
+        className="mt-1.5 w-full rounded-[12px] border border-[var(--ink-faint)] bg-white px-3.5 py-2.5 text-sm placeholder:text-[var(--ink)]/30 focus:border-[var(--gold)] focus:outline-none focus:ring-2 focus:ring-[var(--gold-faint)]"
       />
     </div>
   );
@@ -252,12 +340,12 @@ function CampoTexto({
 function CampoTextarea({ label, name, placeholder }: { label: string; name: string; placeholder?: string }) {
   return (
     <div>
-      <label className="block text-sm font-medium text-grafite">{label}</label>
+      <label className="block text-[11px] font-semibold uppercase tracking-wide text-[var(--ink)]">{label}</label>
       <textarea
         name={name}
         rows={3}
         placeholder={placeholder}
-        className="mt-1 w-full rounded border border-grafite/20 px-3 py-2 placeholder:text-grafite/40"
+        className="mt-1.5 w-full rounded-[12px] border border-[var(--ink-faint)] bg-white px-3.5 py-2.5 text-sm placeholder:text-[var(--ink)]/30 focus:border-[var(--gold)] focus:outline-none focus:ring-2 focus:ring-[var(--gold-faint)]"
       />
     </div>
   );

@@ -1,12 +1,11 @@
-// Cria (ou atualiza a senha de) o primeiro usuário do painel admin.
-// Uso: node scripts/criar-admin.mjs "Nome" email@exemplo.com "senha123"
+// Cria (ou atualiza a senha de) o usuário do painel admin.
+// Uso: node scripts/criar-admin.mjs "Nome" email@exemplo.com "senha123" [DIRETORIA|COMISSAO]
 
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import fs from "fs";
 
 // Carrega .env manualmente se as variáveis do Prisma ainda não estiverem definidas
-// (necessário quando o script é rodado via `node` puro, sem Next.js)
 if (!process.env.POSTGRES_PRISMA_URL && fs.existsSync(".env")) {
   const linhas = fs.readFileSync(".env", "utf8").split("\n");
   for (const linha of linhas) {
@@ -23,16 +22,23 @@ if (!process.env.POSTGRES_PRISMA_URL && fs.existsSync(".env")) {
   }
 }
 
-const [, , nome, emailRaw, senha] = process.argv;
+const [, , nome, emailRaw, senha, papelRaw] = process.argv;
 
 if (!nome || !emailRaw || !senha) {
-  console.error(
-    'Uso: node scripts/criar-admin.mjs "Nome" email@exemplo.com "senha"'
-  );
+  console.error('Uso: node scripts/criar-admin.mjs "Nome" email@exemplo.com "senha" [DIRETORIA|COMISSAO]');
   process.exit(1);
 }
 
 const email = emailRaw.trim().toLowerCase();
+let papel = "COMISSAO";
+if (papelRaw) {
+  const p = papelRaw.trim().toUpperCase();
+  if (p === "DIRETORIA" || p === "COMISSAO") papel = p;
+  else {
+    console.error('Papel deve ser DIRETORIA ou COMISSAO');
+    process.exit(1);
+  }
+}
 
 const prisma = new PrismaClient();
 
@@ -40,9 +46,9 @@ const senhaHash = await bcrypt.hash(senha, 10);
 
 const usuario = await prisma.adminUser.upsert({
   where: { email },
-  update: { senhaHash, nome },
-  create: { nome, email, senhaHash },
+  update: { senhaHash, nome, papel },
+  create: { nome, email, senhaHash, papel },
 });
 
-console.log(`Usuário admin pronto: ${usuario.email}`);
+console.log(`Usuário admin pronto: ${usuario.email} [${usuario.papel}]`);
 await prisma.$disconnect();

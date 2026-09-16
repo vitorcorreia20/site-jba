@@ -8,6 +8,36 @@ export const authOptions: NextAuthOptions = {
   pages: {
     signIn: "/admin/login",
   },
+  callbacks: {
+    async jwt({ token, user }) {
+      if (user) {
+        // user retornado por authorize já contém papel
+        const u = user as unknown as { papel?: string };
+        if (u.papel) token.papel = u.papel;
+        // fallback: busca papel se não veio no user (ex refresh)
+        else if (token.email) {
+          const dbUser = await prisma.adminUser.findUnique({
+            where: { email: String(token.email).toLowerCase() },
+            select: { papel: true },
+          });
+          if (dbUser) token.papel = dbUser.papel;
+        }
+      } else if (token.email && !token.papel) {
+        const dbUser = await prisma.adminUser.findUnique({
+          where: { email: String(token.email).toLowerCase() },
+          select: { papel: true },
+        });
+        if (dbUser) token.papel = dbUser.papel;
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      if (session.user && token.papel) {
+        (session.user as unknown as Record<string, unknown>).papel = token.papel;
+      }
+      return session;
+    },
+  },
   providers: [
     CredentialsProvider({
       name: "Credenciais",
@@ -25,13 +55,15 @@ export const authOptions: NextAuthOptions = {
         });
         if (!usuario) return null;
 
-        const senhaValida = await bcrypt.compare(
-          credentials.senha,
-          usuario.senhaHash
-        );
+        const senhaValida = await bcrypt.compare(credentials.senha, usuario.senhaHash);
         if (!senhaValida) return null;
 
-        return { id: usuario.id, name: usuario.nome, email: usuario.email };
+        return {
+          id: usuario.id,
+          name: usuario.nome,
+          email: usuario.email,
+          papel: usuario.papel,
+        } as unknown as { id: string; name: string; email: string };
       },
     }),
   ],

@@ -1,6 +1,6 @@
 import React from "react";
 import type { Metadata } from "next";
-import { Fraunces, Inter } from "next/font/google";
+import { Fraunces, Instrument_Sans } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -9,13 +9,13 @@ import Providers from "@/app/providers";
 const fraunces = Fraunces({
   subsets: ["latin"],
   variable: "--font-fraunces",
-  weight: ["400", "500", "600"],
+  weight: ["400", "500", "600", "700", "900"],
   style: ["normal", "italic"],
 });
 
-const inter = Inter({
+const instrumentSans = Instrument_Sans({
   subsets: ["latin"],
-  variable: "--font-inter",
+  variable: "--font-instrument",
   weight: ["400", "500", "600", "700"],
 });
 
@@ -31,11 +31,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="pt-BR" className={`${fraunces.variable} ${inter.variable}`}>
-      <body className="font-sans flex min-h-screen flex-col">
+    <html lang="pt-BR" className={`${fraunces.variable} ${instrumentSans.variable}`}>
+      <body className="font-sans flex min-h-screen flex-col antialiased">
+        <a href="#conteudo" className="skip-link">
+          Pular para o conteúdo
+        </a>
         <Providers>
           <Header />
-          <main className="flex-1">{children}</main>
+          <main id="conteudo" className="flex-1">
+            {children}
+          </main>
           <Footer />
         </Providers>
       </body>
