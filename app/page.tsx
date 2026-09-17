@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import CopyPixButton from "@/components/CopyPixButton";
+import Historia from "@/components/Historia";
 
 export const revalidate = 60;
 
@@ -174,26 +175,11 @@ export default async function HomePage() {
 
           <div className="mt-10 grid gap-10 lg:grid-cols-12 lg:gap-12">
             {/* texto – 7 cols */}
-            <div className="space-y-4 text-[15px] leading-relaxed text-[var(--ink-soft)] lg:col-span-7">
-              <p>
-                O Capítulo José Barreto de Albuquerque N°512 carrega 23 anos de
-                trajetória na Ordem DeMolay — 46 gestões semestrais de jovens que
-                assumiram o compromisso de liderar pelo exemplo.
-              </p>
-              <p>
-                [Espaço reservado para a história completa: ano de fundação,
-                origem do nome que homenageia José Barreto de Albuquerque,
-                marcos importantes e a evolução do capítulo dentro da Ordem.]
-              </p>
-              <p className="rounded-xl border border-[var(--ink-faint)] bg-white p-4 text-sm leading-relaxed text-[var(--ink-soft)]">
-                <span className="font-semibold text-[var(--ink)]">Em breve:</span>{" "}
-                texto definitivo será inserido aqui. Você pode editar este trecho
-                diretamente em <code className="rounded bg-[var(--paper-2)] px-1 py-0.5 text-xs">app/page.tsx</code> antes de
-                publicar.
-              </p>
+            <div className="lg:col-span-7">
+              <Historia />
               <Link
                 href="/lideranca"
-                className="inline-flex items-center gap-1.5 pt-2 text-sm font-semibold text-[var(--crimson)] underline decoration-[var(--gold)]/30 underline-offset-4 hover:text-[var(--crimson-deep)]"
+                className="mt-6 inline-flex items-center gap-1.5 text-sm font-semibold text-[var(--crimson)] underline decoration-[var(--gold)]/30 underline-offset-4 hover:text-[var(--crimson-deep)]"
               >
                 Ver quadro completo de lideranças <span aria-hidden>→</span>
               </Link>
@@ -204,11 +190,10 @@ export default async function HomePage() {
               {/* pull-quote */}
               <blockquote className="relative border-l-2 border-[var(--gold)] bg-white px-6 py-6 shadow-soft">
                 <p className="font-display text-[17px] font-medium italic leading-relaxed text-[var(--ink)]">
-                  “Liderança não é cargo — é a responsabilidade diária de
-                  inspirar outros jovens a servirem.”
+                  “O JBA 512 não pertence somente a quem está aqui hoje.”
                 </p>
                 <footer className="mt-3 text-xs font-semibold uppercase tracking-wide text-[var(--stone)]">
-                  — Espírito do Capítulo 512
+                  — História do Capítulo 512
                 </footer>
                 <span
                   aria-hidden
