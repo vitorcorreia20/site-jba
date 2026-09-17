@@ -1,0 +1,29 @@
+import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+
+async function requireDiretoria() {
+  const session = await getServerSession(authOptions);
+  const papel = (session?.user as unknown as { papel?: string })?.papel;
+  if (!session?.user) return NextResponse.json({ erro: "Não autenticado" }, { status: 401 });
+  if (papel !== "DIRETORIA") return NextResponse.json({ erro: "Acesso restrito à diretoria" }, { status: 403 });
+  return null;
+}
+
+export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const guard = await requireDiretoria();
+  if (guard) return guard;
+  const { id } = await params;
+  const body = await request.json().catch(() => ({}));
+  const contato = await prisma.contato.update({ where: { id }, data: { lido: !!body.lido } });
+  return NextResponse.json(contato);
+}
+
+export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const guard = await requireDiretoria();
+  if (guard) return guard;
+  const { id } = await params;
+  await prisma.contato.delete({ where: { id } });
+  return NextResponse.json({ ok: true });
+}

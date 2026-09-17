@@ -1,10 +1,8 @@
 import Link from "next/link";
 
 const links = [
-  { href: "/quero-fazer-parte", label: "Quero fazer parte" },
   { href: "/lideranca", label: "Quadro de lideranças" },
   { href: "/ativos", label: "Quadro de ativos" },
-  { href: "/diretoria", label: "Diretoria" },
 ];
 
 export default function Header() {

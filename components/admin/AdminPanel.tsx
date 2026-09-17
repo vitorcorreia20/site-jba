@@ -5,11 +5,13 @@ import PainelSolicitacoes from "./PainelSolicitacoes";
 import PainelMembros from "./PainelMembros";
 import PainelLiderancas from "./PainelLiderancas";
 import PainelFotos from "./PainelFotos";
+import PainelContatos from "./PainelContatos";
 
 const abasDiretoria = [
   { id: "fotos", label: "Fotos de ações" },
   { id: "membros", label: "Membros" },
   { id: "solicitacoes", label: "Solicitações" },
+  { id: "contatos", label: "Contatos" },
   { id: "liderancas", label: "Lideranças" },
 ] as const;
 
@@ -60,6 +62,7 @@ export default function AdminPanel({ papel }: { papel: Papel }) {
 
       <div className="mt-6" role="tabpanel" id={`painel-${abaAtiva}`} aria-live="polite">
         {abaAtiva === "solicitacoes" && <PainelSolicitacoes />}
+        {isDiretoria && abaAtiva === "contatos" && <PainelContatos />}
         {isDiretoria && abaAtiva === "membros" && <PainelMembros />}
         {isDiretoria && abaAtiva === "liderancas" && <PainelLiderancas />}
         {isDiretoria && abaAtiva === "fotos" && <PainelFotos />}

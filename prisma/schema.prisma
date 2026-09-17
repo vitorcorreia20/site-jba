@@ -96,3 +96,13 @@ model FotoAcao {
   ordem     Int      @default(0)
   criadoEm  DateTime @default(now())
 }
+
+// Mensagem enviada pelo formulário de Contato (nome/telefone/descricao)
+model Contato {
+  id        String   @id @default(cuid())
+  nome      String
+  telefone  String
+  descricao String?
+  lido      Boolean  @default(false)
+  criadoEm  DateTime @default(now())
+}

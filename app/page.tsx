@@ -351,7 +351,7 @@ export default async function HomePage() {
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
               <Link
-                href="/quero-fazer-parte"
+                href="/contato"
                 className="inline-flex items-center gap-2 rounded-full bg-[var(--gold)] px-6 py-3 text-sm font-semibold text-[var(--crimson-deep)] shadow-soft transition-all hover:bg-[var(--gold-light)]"
               >
                 Entrar em contato
