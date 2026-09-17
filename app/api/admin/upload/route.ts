@@ -111,7 +111,13 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ url: blob.url, pathname: blob.pathname }, { status: 201 });
   } catch (e: unknown) {
-    const msg = e instanceof Error ? e.message : String(e);
-    return NextResponse.json({ erro: `Falha no upload para o Blob: ${msg}` }, { status: 500 });
+    const raw = e instanceof Error ? e.message : String(e);
+    let hint = "";
+    if (raw.includes("does not exist") || raw.includes("store_htyWCS") || raw.includes("store_V1Xvo")) {
+      hint = " — Store não existe. Se você recriou o Blob Store (public vs private), atualize BLOB_READ_WRITE_TOKEN/BLOB_STORE_ID no .env e na Vercel (Settings -> Environment Variables) e faça Redeploy sem cache.";
+    } else if (raw.toLowerCase().includes("private") && raw.toLowerCase().includes("public")) {
+      hint = " — Store privado não aceita access:public. Recrie o Store como Public em Vercel Storage.";
+    }
+    return NextResponse.json({ erro: `Falha no upload para o Blob: ${raw}${hint}` }, { status: 500 });
   }
 }
