@@ -51,9 +51,13 @@ export default function CampoUploadImagem({
       const form = new FormData();
       form.append("file", file);
       const resp = await fetch("/api/admin/upload", { method: "POST", body: form });
-      const json = await resp.json();
+      const json = await resp.json().catch(() => ({}));
       if (!resp.ok) {
-        setErro(json.erro || "Falha no upload.");
+        const detalhe = json.detalhe ? ` ${json.detalhe}` : "";
+        const diag = json.diagnostico
+          ? ` [diag: hasToken=${json.diagnostico.hasToken} blobEnvs=${(json.diagnostico.blobEnvs || []).join(",") || "nenhum"} vercelEnv=${json.diagnostico.vercelEnv || "-"}]`
+          : "";
+        setErro(`${json.erro || "Falha no upload."}${detalhe}${diag}`);
         return;
       }
       onChange(json.url);

@@ -29,13 +29,42 @@ function sanitizeFileName(name: string): string {
   return base.replace(/[^a-zA-Z0-9._-]/g, "_").slice(0, 80) || "imagem";
 }
 
+export async function GET() {
+  const guard = await requireDiretoria();
+  if (guard) return guard;
+  const hasToken = !!process.env.BLOB_READ_WRITE_TOKEN;
+  const blobEnvs = Object.keys(process.env).filter((k) => k.includes("BLOB"));
+  return NextResponse.json({
+    hasToken,
+    blobEnvs,
+    hasStoreId: !!process.env.BLOB_STORE_ID,
+    runtime: "nodejs",
+    hint: hasToken
+      ? "ok"
+      : "BLOB_READ_WRITE_TOKEN ausente. Na Vercel: Storage > Blob Store > Connect Project + Redeploy sem cache. Local: vercel env pull ou copie para .env e reinicie next dev.",
+  });
+}
+
 export async function POST(request: Request) {
   const guard = await requireDiretoria();
   if (guard) return guard;
 
+  // Diagnóstico detalhado para Vercel: lista quais BLOB_* existem sem expor valores
   if (!process.env.BLOB_READ_WRITE_TOKEN) {
+    const blobEnvs = Object.keys(process.env).filter((k) => k.includes("BLOB"));
     return NextResponse.json(
-      { erro: "BLOB_READ_WRITE_TOKEN não configurado no servidor. Crie o Blob Store na Vercel e conecte ao projeto." },
+      {
+        erro: "BLOB_READ_WRITE_TOKEN não configurado no servidor. Crie o Blob Store na Vercel e conecte ao projeto.",
+        detalhe:
+          "Na Vercel: Storage > seu Blob Store > Settings > Connected Projects selecione site-jba em Production/Preview/Development, depois Deployments > Redeploy (sem cache). Local: rode `npx vercel env pull .env.local` e reinicie `npm run dev`.",
+        diagnostico: {
+          hasToken: false,
+          blobEnvs,
+          hasStoreId: !!process.env.BLOB_STORE_ID,
+          vercel: !!process.env.VERCEL,
+          vercelEnv: process.env.VERCEL_ENV || null,
+        },
+      },
       { status: 500 }
     );
   }

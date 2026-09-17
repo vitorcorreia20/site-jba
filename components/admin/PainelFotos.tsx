@@ -12,8 +12,6 @@ type Foto = {
 
 export default function PainelFotos() {
   const [fotos, setFotos] = useState<Foto[] | null>(null);
-  const [removerAlvo, setRemoverAlvo] = useState<Foto | null>(null);
-  const [confirmTexto, setConfirmTexto] = useState("");
   const [previewUrl, setPreviewUrl] = useState("");
   const [erro, setErro] = useState<string | null>(null);
   const [ok, setOk] = useState<string | null>(null);
@@ -58,12 +56,15 @@ export default function PainelFotos() {
     recarregar();
   }
 
-  async function confirmarRemover() {
-    if (!removerAlvo) return;
-    if (confirmTexto.trim() !== (removerAlvo.legenda ?? removerAlvo.url).trim().slice(0, 20)) return;
-    await fetch(`/api/admin/fotos/${removerAlvo.id}`, { method: "DELETE" });
-    setRemoverAlvo(null);
-    setConfirmTexto("");
+  async function handleRemover(foto: Foto) {
+    if (!window.confirm("Remover esta foto?")) return;
+    setErro(null);
+    const resp = await fetch(`/api/admin/fotos/${foto.id}`, { method: "DELETE" });
+    if (!resp.ok) {
+      const json = await resp.json().catch(() => ({}));
+      setErro(json.erro || "Erro ao remover foto.");
+      return;
+    }
     recarregar();
   }
 
@@ -99,6 +100,7 @@ export default function PainelFotos() {
 
       <div>
         <h2 className="font-display text-[15px] font-semibold text-[var(--crimson)]">Fotos cadastradas ({fotos?.length ?? 0})</h2>
+        {erro && <p className="mt-2 rounded-[10px] border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">{erro}</p>}
         <ul className="mt-4 space-y-2">
           {fotos?.map((f) => (
             <li key={f.id} className="flex items-center gap-3 rounded-[12px] border border-[var(--ink-faint)] bg-white px-3 py-2 shadow-sm">
@@ -107,10 +109,7 @@ export default function PainelFotos() {
               </div>
               <span className="min-w-0 flex-1 truncate text-sm text-[var(--ink)]">{f.legenda || f.url}</span>
               <button
-                onClick={() => {
-                  setRemoverAlvo(f);
-                  setConfirmTexto("");
-                }}
+                onClick={() => handleRemover(f)}
                 className="shrink-0 rounded-full border border-red-200 bg-red-50 px-3 py-1 text-xs font-semibold text-red-700 hover:bg-red-100"
               >
                 Remover
@@ -124,37 +123,6 @@ export default function PainelFotos() {
           )}
         </ul>
       </div>
-
-      {removerAlvo && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-sm rounded-[18px] border bg-white p-6 shadow-strong">
-            <h3 className="font-display font-semibold text-[var(--crimson)]">Confirmar exclusão</h3>
-            <p className="mt-2 text-sm text-[var(--ink-soft)]">
-              Digite os primeiros 20 caracteres de <span className="font-semibold">{(removerAlvo.legenda ?? removerAlvo.url).slice(0, 20)}</span> para
-              remover.
-            </p>
-            <input
-              value={confirmTexto}
-              onChange={(e) => setConfirmTexto(e.target.value)}
-              placeholder={(removerAlvo.legenda ?? removerAlvo.url).slice(0, 20)}
-              className="mt-4 w-full rounded-[12px] border border-[var(--ink-faint)] px-3 py-2.5 text-sm focus:border-[var(--gold)] focus:outline-none focus:ring-2 focus:ring-[var(--gold-faint)]"
-              autoFocus
-            />
-            <div className="mt-5 flex justify-end gap-2">
-              <button onClick={() => setRemoverAlvo(null)} className="rounded-full border border-[var(--ink-faint)] bg-white px-4 py-2 text-xs font-semibold text-[var(--ink)]">
-                Cancelar
-              </button>
-              <button
-                onClick={confirmarRemover}
-                disabled={confirmTexto.trim() !== (removerAlvo.legenda ?? removerAlvo.url).trim().slice(0, 20)}
-                className="rounded-full bg-red-600 px-4 py-2 text-xs font-semibold text-white hover:bg-red-700 disabled:opacity-40"
-              >
-                Remover
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
