@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
+import { del } from "@vercel/blob";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
@@ -104,6 +105,23 @@ export async function DELETE(
   const guard = await requireDiretoria();
   if (guard) return guard;
   const { id } = await params;
+  const membro = await prisma.membro.findUnique({
+    where: { id },
+    include: { premios: true },
+  });
   await prisma.membro.delete({ where: { id } });
+  // best-effort: limpa blobs do membro e prêmios (sequencial, ignora externos)
+  const urls: string[] = [];
+  if (membro?.fotoUrl && membro.fotoUrl.includes("blob.vercel-storage.com")) urls.push(membro.fotoUrl);
+  for (const pr of membro?.premios ?? []) {
+    if (pr.imagemUrl.includes("blob.vercel-storage.com")) urls.push(pr.imagemUrl);
+  }
+  for (const url of urls) {
+    try {
+      await del(url);
+    } catch {
+      // ignora
+    }
+  }
   return NextResponse.json({ ok: true });
 }

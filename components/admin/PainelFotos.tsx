@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, FormEvent } from "react";
+import CampoUploadImagem from "./CampoUploadImagem";
 
 type Foto = {
   id: string;
@@ -14,6 +15,8 @@ export default function PainelFotos() {
   const [removerAlvo, setRemoverAlvo] = useState<Foto | null>(null);
   const [confirmTexto, setConfirmTexto] = useState("");
   const [previewUrl, setPreviewUrl] = useState("");
+  const [erro, setErro] = useState<string | null>(null);
+  const [ok, setOk] = useState<string | null>(null);
 
   function recarregar() {
     fetch("/api/admin/fotos")
@@ -25,12 +28,31 @@ export default function PainelFotos() {
 
   async function handleSubmit(evento: FormEvent<HTMLFormElement>) {
     evento.preventDefault();
-    const dados = Object.fromEntries(new FormData(evento.currentTarget).entries());
-    await fetch("/api/admin/fotos", {
+    setErro(null);
+    setOk(null);
+    const dados = Object.fromEntries(new FormData(evento.currentTarget).entries()) as Record<string, string>;
+    const url = previewUrl.trim() || (dados.url as string)?.trim();
+    if (!url) {
+      setErro("Selecione um arquivo ou cole a URL da imagem.");
+      return;
+    }
+    try {
+      new URL(url);
+    } catch {
+      setErro("URL da imagem inválida.");
+      return;
+    }
+    const resp = await fetch("/api/admin/fotos", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(dados),
+      body: JSON.stringify({ url, legenda: dados.legenda, ordem: dados.ordem }),
     });
+    const json = await resp.json().catch(() => ({}));
+    if (!resp.ok) {
+      setErro(json.erro || "Erro ao salvar foto.");
+      return;
+    }
+    setOk("Foto adicionada com sucesso!");
     evento.currentTarget.reset();
     setPreviewUrl("");
     recarregar();
@@ -49,25 +71,16 @@ export default function PainelFotos() {
     <div className="grid gap-8 lg:grid-cols-2">
       <div className="rounded-[16px] border border-[var(--ink-faint)] bg-[var(--paper)] p-5">
         <h2 className="font-display text-[15px] font-semibold text-[var(--crimson)]">Nova foto de ação</h2>
-        <p className="text-xs text-[var(--ink)]/50">Envie ao Vercel Blob e cole a URL pública.</p>
+        <p className="text-xs text-[var(--ink)]/50">Escolha um arquivo (JPG/PNG/WEBP, máx 4.5MB) ou cole uma URL externa.</p>
         <form onSubmit={handleSubmit} className="mt-4 space-y-3">
-          <div>
-            <label className="block text-[11px] font-semibold uppercase tracking-wide text-[var(--ink)]">URL da imagem *</label>
-            <input
-              name="url"
-              required
-              placeholder="https://..."
-              onChange={(e) => setPreviewUrl(e.target.value)}
-              className="mt-1.5 w-full rounded-[12px] border border-[var(--ink-faint)] bg-white px-3 py-2.5 text-sm focus:border-[var(--gold)] focus:outline-none focus:ring-2 focus:ring-[var(--gold-faint)]"
-            />
-          </div>
-          {previewUrl && (
-            <div className="overflow-hidden rounded-[12px] border border-[var(--ink-faint)] bg-[var(--paper-2)]">
-              <div className="relative aspect-[4/3] w-full">
-                <img src={previewUrl} alt="Preview" className="h-full w-full object-cover" onError={(e) => ((e.target as HTMLImageElement).style.display = "none")} />
-              </div>
-            </div>
-          )}
+          <CampoUploadImagem
+            label="Imagem *"
+            value={previewUrl}
+            onChange={setPreviewUrl}
+            placeholder="https://... ou escolha um arquivo"
+            required
+            hint="Upload direto para Vercel Blob. Fallback: cole link do Cloudinary/externo."
+          />
           <div>
             <label className="block text-[11px] font-semibold uppercase tracking-wide text-[var(--ink)]">Legenda</label>
             <input name="legenda" placeholder="Ex: Ação social - 2024" className="mt-1.5 w-full rounded-[12px] border border-[var(--ink-faint)] bg-white px-3 py-2.5 text-sm focus:border-[var(--gold)] focus:outline-none focus:ring-2 focus:ring-[var(--gold-faint)]" />
@@ -76,6 +89,8 @@ export default function PainelFotos() {
             <label className="block text-[11px] font-semibold uppercase tracking-wide text-[var(--ink)]">Ordem</label>
             <input name="ordem" type="number" placeholder="0" className="mt-1.5 w-full rounded-[12px] border border-[var(--ink-faint)] bg-white px-3 py-2.5 text-sm focus:border-[var(--gold)] focus:outline-none focus:ring-2 focus:ring-[var(--gold-faint)]" />
           </div>
+          {erro && <p className="rounded-[10px] border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">{erro}</p>}
+          {ok && <p className="rounded-[10px] border border-green-200 bg-green-50 px-3 py-2 text-xs text-green-700">{ok}</p>}
           <button type="submit" className="w-full rounded-full bg-[var(--crimson)] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[var(--crimson-deep)]">
             Adicionar foto
           </button>

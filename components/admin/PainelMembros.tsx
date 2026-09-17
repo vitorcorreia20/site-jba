@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, FormEvent } from "react";
+import CampoUploadImagem from "./CampoUploadImagem";
 
 type Premio = {
   id: string;
@@ -25,6 +26,7 @@ type PremioDraft = { imagemUrl: string; legenda: string };
 export default function PainelMembros() {
   const [membros, setMembros] = useState<Membro[] | null>(null);
   const [premiosDraft, setPremiosDraft] = useState<PremioDraft[]>([]);
+  const [fotoUrl, setFotoUrl] = useState("");
   const [erro, setErro] = useState<string | null>(null);
   const [ok, setOk] = useState<string | null>(null);
   const [removerAlvo, setRemoverAlvo] = useState<Membro | null>(null);
@@ -87,11 +89,21 @@ export default function PainelMembros() {
       }
     }
 
+    const urlFoto = fotoUrl.trim() || (dadosForm.fotoUrl as string)?.trim() || "";
+    if (urlFoto) {
+      try {
+        new URL(urlFoto);
+      } catch {
+        setErro("URL da foto inválida.");
+        return;
+      }
+    }
+
     const payload = {
       idDemolay,
       nome: dadosForm.nome?.trim(),
       tipo: dadosForm.tipo,
-      fotoUrl: dadosForm.fotoUrl?.trim() || null,
+      fotoUrl: urlFoto || null,
       cargoAtual: dadosForm.cargoAtual?.trim() || null,
       historicoCargos: dadosForm.historicoCargos?.trim() || null,
       premios,
@@ -110,6 +122,7 @@ export default function PainelMembros() {
 
     setOk(`Membro #${idDemolay} criado com sucesso!`);
     form.reset();
+    setFotoUrl("");
     setPremiosDraft([]);
     recarregar();
   }
@@ -146,7 +159,15 @@ export default function PainelMembros() {
               <option value="DIRETORIA">Diretoria (aparece com card)</option>
             </select>
           </div>
-          <CampoTexto label="URL da foto" name="fotoUrl" placeholder="https://..." />
+          <CampoUploadImagem
+            label="Foto do membro"
+            value={fotoUrl}
+            onChange={setFotoUrl}
+            placeholder="https://... ou escolha arquivo"
+            hint="JPG/PNG/WEBP até 4.5MB. Fallback: cole URL externa."
+          />
+          {/* fallback hidden input para compatibilidade com FormData caso use URL manual extra */}
+          <input type="hidden" name="fotoUrl" value={fotoUrl} />
           <CampoTexto label="Cargo atual" name="cargoAtual" placeholder="Mestre Conselheiro" />
           <CampoTextarea label="Histórico de cargos (um por linha)" name="historicoCargos" placeholder={"2024.1 - Hospitaleiro\n2025 - Tesoureiro"} />
 
@@ -175,12 +196,12 @@ export default function PainelMembros() {
                       Remover
                     </button>
                   </div>
-                  <input
-                    type="url"
-                    placeholder="https://exemplo.com/premio.jpg"
+                  <CampoUploadImagem
+                    label={`Imagem do prêmio #${idx + 1}`}
                     value={p.imagemUrl}
-                    onChange={(e) => updatePremio(idx, "imagemUrl", e.target.value)}
-                    className="w-full rounded-[10px] border border-[var(--ink-faint)] bg-white px-3 py-2 text-sm focus:border-[var(--gold)] focus:outline-none focus:ring-2 focus:ring-[var(--gold-faint)]"
+                    onChange={(v) => updatePremio(idx, "imagemUrl", v)}
+                    placeholder="https://... ou escolha arquivo"
+                    hint="Upload sequencial (um por vez) até 4.5MB cada."
                   />
                   <input
                     type="text"
@@ -189,16 +210,6 @@ export default function PainelMembros() {
                     onChange={(e) => updatePremio(idx, "legenda", e.target.value)}
                     className="mt-2 w-full rounded-[10px] border border-[var(--ink-faint)] bg-white px-3 py-2 text-sm focus:border-[var(--gold)] focus:outline-none focus:ring-2 focus:ring-[var(--gold-faint)]"
                   />
-                  {p.imagemUrl && (
-                    <div className="relative mt-2 h-20 overflow-hidden rounded-[8px] border border-[var(--ink-faint)] bg-[var(--paper-2)]">
-                      <img
-                        src={p.imagemUrl}
-                        alt={p.legenda || `Prêmio ${idx + 1}`}
-                        className="h-full w-full object-contain"
-                        onError={(e) => ((e.target as HTMLImageElement).style.display = "none")}
-                      />
-                    </div>
-                  )}
                 </div>
               ))}
             </div>

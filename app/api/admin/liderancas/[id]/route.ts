@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
+import { del } from "@vercel/blob";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
@@ -18,6 +19,14 @@ export async function DELETE(
   const guard = await requireDiretoria();
   if (guard) return guard;
   const { id } = await params;
+  const mestre = await prisma.mestreConselheiro.findUnique({ where: { id } });
   await prisma.mestreConselheiro.delete({ where: { id } });
+  if (mestre?.fotoUrl && mestre.fotoUrl.includes("blob.vercel-storage.com")) {
+    try {
+      await del(mestre.fotoUrl);
+    } catch {
+      // ignora
+    }
+  }
   return NextResponse.json({ ok: true });
 }

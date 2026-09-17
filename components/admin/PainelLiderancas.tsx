@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, FormEvent } from "react";
+import CampoUploadImagem from "./CampoUploadImagem";
 
 type Mestre = {
   id: string;
@@ -14,6 +15,9 @@ export default function PainelLiderancas() {
   const [mestres, setMestres] = useState<Mestre[] | null>(null);
   const [removerAlvo, setRemoverAlvo] = useState<Mestre | null>(null);
   const [confirmNome, setConfirmNome] = useState("");
+  const [fotoUrl, setFotoUrl] = useState("");
+  const [erro, setErro] = useState<string | null>(null);
+  const [ok, setOk] = useState<string | null>(null);
 
   function recarregar() {
     fetch("/api/admin/liderancas")
@@ -25,13 +29,41 @@ export default function PainelLiderancas() {
 
   async function handleSubmit(evento: FormEvent<HTMLFormElement>) {
     evento.preventDefault();
-    const dados = Object.fromEntries(new FormData(evento.currentTarget).entries());
-    await fetch("/api/admin/liderancas", {
+    setErro(null);
+    setOk(null);
+    const dados = Object.fromEntries(new FormData(evento.currentTarget).entries()) as Record<string, string>;
+    const urlFoto = fotoUrl.trim() || (dados.fotoUrl as string)?.trim() || "";
+    if (urlFoto) {
+      try {
+        new URL(urlFoto);
+      } catch {
+        setErro("URL da foto inválida.");
+        return;
+      }
+    }
+    const payload = {
+      nome: (dados.nome as string)?.trim(),
+      periodo: (dados.periodo as string)?.trim(),
+      fotoUrl: urlFoto || null,
+      ordem: dados.ordem,
+    };
+    if (!payload.nome || !payload.periodo) {
+      setErro("Nome e período são obrigatórios.");
+      return;
+    }
+    const resp = await fetch("/api/admin/liderancas", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(dados),
+      body: JSON.stringify(payload),
     });
+    const json = await resp.json().catch(() => ({}));
+    if (!resp.ok) {
+      setErro(json.erro || "Erro ao salvar.");
+      return;
+    }
+    setOk("Mestre adicionado com sucesso!");
     evento.currentTarget.reset();
+    setFotoUrl("");
     recarregar();
   }
 
@@ -58,14 +90,20 @@ export default function PainelLiderancas() {
             <label className="block text-[11px] font-semibold uppercase tracking-wide text-[var(--ink)]">Período * (ex: 2023 ou 2023/2024)</label>
             <input name="periodo" required className="mt-1.5 w-full rounded-[12px] border border-[var(--ink-faint)] bg-white px-3 py-2.5 text-sm focus:border-[var(--gold)] focus:outline-none focus:ring-2 focus:ring-[var(--gold-faint)]" />
           </div>
-          <div>
-            <label className="block text-[11px] font-semibold uppercase tracking-wide text-[var(--ink)]">URL da foto</label>
-            <input name="fotoUrl" placeholder="https://..." className="mt-1.5 w-full rounded-[12px] border border-[var(--ink-faint)] bg-white px-3 py-2.5 text-sm placeholder:text-[var(--ink)]/30 focus:border-[var(--gold)] focus:outline-none focus:ring-2 focus:ring-[var(--gold-faint)]" />
-          </div>
+          <CampoUploadImagem
+            label="Foto"
+            value={fotoUrl}
+            onChange={setFotoUrl}
+            placeholder="https://... ou escolha arquivo"
+            hint="JPG/PNG/WEBP até 4.5MB. Fallback: cole URL externa."
+          />
+          <input type="hidden" name="fotoUrl" value={fotoUrl} />
           <div>
             <label className="block text-[11px] font-semibold uppercase tracking-wide text-[var(--ink)]">Ordem</label>
             <input name="ordem" type="number" placeholder="1" className="mt-1.5 w-full rounded-[12px] border border-[var(--ink-faint)] bg-white px-3 py-2.5 text-sm focus:border-[var(--gold)] focus:outline-none focus:ring-2 focus:ring-[var(--gold-faint)]" />
           </div>
+          {erro && <p className="rounded-[10px] border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">{erro}</p>}
+          {ok && <p className="rounded-[10px] border border-green-200 bg-green-50 px-3 py-2 text-xs text-green-700">{ok}</p>}
           <button type="submit" className="w-full rounded-full bg-[var(--crimson)] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[var(--crimson-deep)]">
             Adicionar
           </button>
