@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 const links = [
@@ -17,11 +18,16 @@ export default function Header() {
           className="group flex items-center gap-3"
           aria-label="Capítulo José Barreto de Albuquerque N°512 – página inicial"
         >
-          {/* Selo 512 – tipográfico puro, sem brasão */}
-          <span className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full border-[1.5px] border-[var(--gold)] bg-[var(--crimson-deep)] font-display text-[15px] font-bold tracking-wide text-[var(--gold)] shadow-sm transition-transform group-hover:scale-[1.02]">
-            {/* anel interno sutil */}
-            <span className="pointer-events-none absolute inset-[3px] rounded-full border border-[var(--gold)]/20" />
-            512
+          {/* Logo do capítulo — substitui selo 512 tipográfico */}
+          <span className="relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full border-[1.5px] border-[var(--gold)] bg-[var(--crimson-deep)] shadow-sm transition-transform group-hover:scale-[1.02]">
+            <Image
+              src="/logo-jba.png"
+              alt="Brasão Capítulo José Barreto de Albuquerque N°512"
+              width={44}
+              height={44}
+              className="h-full w-full object-contain p-1"
+              priority
+            />
           </span>
 
           <span className="font-display text-[17px] font-semibold leading-[1.05] tracking-tight">

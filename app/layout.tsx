@@ -23,6 +23,14 @@ export const metadata: Metadata = {
   title: "Capítulo José Barreto de Albuquerque N°512 | Ordem DeMolay",
   description:
     "Capítulo José Barreto de Albuquerque N°512 da Ordem DeMolay: história, quadro de lideranças, membros ativos e como fazer parte.",
+  icons: {
+    icon: [
+      { url: "/icon.png", type: "image/png", sizes: "32x32" },
+      { url: "/favicon.ico", type: "image/x-icon" },
+    ],
+    apple: [{ url: "/apple-icon.png", sizes: "180x180", type: "image/png" }],
+    shortcut: "/favicon.ico",
+  },
 };
 
 export default function RootLayout({
