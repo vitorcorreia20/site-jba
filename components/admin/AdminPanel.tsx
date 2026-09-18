@@ -6,9 +6,11 @@ import PainelMembros from "./PainelMembros";
 import PainelLiderancas from "./PainelLiderancas";
 import PainelFotos from "./PainelFotos";
 import PainelContatos from "./PainelContatos";
+import PainelUsuarios from "./PainelUsuarios";
 
 const abasDiretoria = [
   { id: "fotos", label: "Fotos de ações" },
+  { id: "usuarios", label: "Usuários" },
   { id: "membros", label: "Membros" },
   { id: "solicitacoes", label: "Solicitações" },
   { id: "contatos", label: "Contatos" },
@@ -21,7 +23,7 @@ type Papel = "DIRETORIA" | "COMISSAO";
 type AbaIdDiretoria = (typeof abasDiretoria)[number]["id"];
 type AbaIdComissao = (typeof abasComissao)[number]["id"];
 
-export default function AdminPanel({ papel }: { papel: Papel }) {
+export default function AdminPanel({ papel, emailAtual }: { papel: Papel; emailAtual?: string }) {
   const isDiretoria = papel === "DIRETORIA";
   const abas = isDiretoria ? abasDiretoria : abasComissao;
   const [abaAtiva, setAbaAtiva] = useState<string>(isDiretoria ? "fotos" : "solicitacoes");
@@ -56,7 +58,7 @@ export default function AdminPanel({ papel }: { papel: Papel }) {
 
       {!isDiretoria && (
         <p className="mt-4 rounded-full border border-[var(--gold-border)] bg-[var(--gold-faint)] px-3 py-2 text-xs font-medium text-[var(--crimson)]">
-          Acesso da comissão: somente solicitações de admissão. Para editar membros/fotos, solicite acesso de diretoria.
+          Acesso de gestor: somente solicitações de admissão. Para editar membros/fotos/usuários, solicite acesso de Administração (Diretoria).
         </p>
       )}
 
@@ -66,6 +68,7 @@ export default function AdminPanel({ papel }: { papel: Papel }) {
         {isDiretoria && abaAtiva === "membros" && <PainelMembros />}
         {isDiretoria && abaAtiva === "liderancas" && <PainelLiderancas />}
         {isDiretoria && abaAtiva === "fotos" && <PainelFotos />}
+        {isDiretoria && abaAtiva === "usuarios" && <PainelUsuarios emailAtual={emailAtual} />}
       </div>
     </div>
   );

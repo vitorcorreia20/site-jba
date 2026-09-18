@@ -35,7 +35,7 @@ export default async function AdminPage() {
                     : "bg-[var(--gold-faint)] text-[var(--crimson)] border border-[var(--gold-border)]"
                 }`}
               >
-                {isDiretoria ? "Diretoria" : "Comissão"}
+                {isDiretoria ? "Administração" : "Gestor"}
               </span>
             </div>
             <p className="mt-2 text-sm text-[var(--ink)]/60">
@@ -48,7 +48,7 @@ export default async function AdminPage() {
 
       <section className="mx-auto max-w-6xl px-6 py-8">
         <div className="rounded-[18px] border border-[var(--ink-faint)] bg-white p-6 shadow-soft sm:p-8">
-          <AdminPanel papel={papel as "DIRETORIA" | "COMISSAO"} />
+          <AdminPanel papel={papel as "DIRETORIA" | "COMISSAO"} emailAtual={session.user?.email ?? undefined} />
         </div>
       </section>
     </div>

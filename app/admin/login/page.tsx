@@ -52,7 +52,7 @@ export default function LoginAdminPage() {
             </div>
           </div>
           <p className="mt-3 text-sm leading-relaxed text-[var(--ink-soft)]">
-            Acesso restrito à diretoria e comissão de análise.
+            Acesso restrito à Administração (Diretoria) e Gestor.
           </p>
           <div className="divider-diamond my-4">
             <span>◆</span>
