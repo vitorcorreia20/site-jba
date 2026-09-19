@@ -63,11 +63,6 @@ export default function Footer() {
                 Quadro de ativos
               </Link>
             </li>
-            <li>
-              <Link href="/diretoria" className="transition-colors hover:text-[var(--gold-light)]">
-                Diretoria
-              </Link>
-            </li>
           </ul>
         </nav>
 
