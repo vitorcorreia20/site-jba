@@ -382,9 +382,6 @@ export default async function HomePage() {
                   </div>
                   <CopyPixButton pix="08737653385" />
                 </div>
-                <p className="mt-3 text-[11px] leading-relaxed text-[var(--ink)]/40">
-                  Ao doar, envie o comprovante via WhatsApp da diretoria para confirmação.
-                </p>
               </div>
             </div>
           </div>
