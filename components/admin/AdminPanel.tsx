@@ -66,7 +66,7 @@ export default function AdminPanel({ papel, emailAtual }: { papel: Papel; emailA
       )}
 
       <div className="mt-6" role="tabpanel" id={`painel-${abaAtiva}`} aria-live="polite">
-        {abaAtiva === "solicitacoes" && <PainelSolicitacoes />}
+        {abaAtiva === "solicitacoes" && <PainelSolicitacoes papel={papel} />}
         {(isDiretoria || papel === "COMISSAO") && abaAtiva === "contatos" && <PainelContatos papel={papel} />}
         {isDiretoria && abaAtiva === "membros" && <PainelMembros />}
         {isDiretoria && abaAtiva === "liderancas" && <PainelLiderancas />}

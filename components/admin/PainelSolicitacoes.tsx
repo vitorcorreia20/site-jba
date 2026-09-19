@@ -32,8 +32,9 @@ function formatTelefone(tel: string): string {
   return d;
 }
 
-export default function PainelSolicitacoes() {
+export default function PainelSolicitacoes({ papel }: { papel?: "DIRETORIA" | "COMISSAO" } = {}) {
   const [solicitacoes, setSolicitacoes] = useState<Solicitacao[] | null>(null);
+  const isAdmin = papel === "DIRETORIA";
 
   useEffect(() => {
     fetch("/api/admin/solicitacoes")
@@ -48,6 +49,18 @@ export default function PainelSolicitacoes() {
       body: JSON.stringify({ status }),
     });
     setSolicitacoes((atual) => atual?.map((s) => (s.id === id ? { ...s, status } : s)) ?? null);
+  }
+
+  async function excluirSolicitacao(id: string, nome: string) {
+    if (!isAdmin) return;
+    if (!window.confirm(`Excluir solicitação de "${nome}"? Esta ação não pode ser desfeita.`)) return;
+    const resp = await fetch(`/api/admin/solicitacoes/${id}`, { method: "DELETE" });
+    if (!resp.ok) {
+      const json = await resp.json().catch(() => ({}));
+      alert(json.erro || "Erro ao excluir solicitação.");
+      return;
+    }
+    setSolicitacoes((atual) => atual?.filter((s) => s.id !== id) ?? null);
   }
 
   if (!solicitacoes)
@@ -105,7 +118,7 @@ export default function PainelSolicitacoes() {
               </div>
             </div>
             {s.mensagem && <p className="mt-3 rounded-xl bg-[var(--paper)] p-3 text-sm leading-relaxed text-[var(--ink-soft)]">{s.mensagem}</p>}
-            <div className="mt-3 flex gap-2">
+            <div className="mt-3 flex flex-wrap gap-2">
               <a
                 href={waUrl}
                 target="_blank"
@@ -114,6 +127,15 @@ export default function PainelSolicitacoes() {
               >
                 Abrir WhatsApp
               </a>
+              {isAdmin && (
+                <button
+                  type="button"
+                  onClick={() => excluirSolicitacao(s.id, s.nomeCompleto)}
+                  className="inline-flex items-center gap-1 rounded-full border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100"
+                >
+                  Excluir solicitação
+                </button>
+              )}
             </div>
           </div>
         );
