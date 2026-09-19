@@ -8,10 +8,11 @@ type Contato = {
   telefone: string;
   descricao: string | null;
   lido: boolean;
+  realizado: boolean;
   criadoEm: string;
 };
 
-export default function PainelContatos() {
+export default function PainelContatos({ papel }: { papel?: "DIRETORIA" | "COMISSAO" } = {}) {
   const [contatos, setContatos] = useState<Contato[] | null>(null);
 
   function recarregar() {
@@ -31,7 +32,17 @@ export default function PainelContatos() {
     setContatos((atual) => atual?.map((x) => (x.id === c.id ? { ...x, lido: !c.lido } : x)) ?? null);
   }
 
+  async function toggleRealizado(c: Contato) {
+    await fetch(`/api/admin/contatos/${c.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ realizado: !c.realizado }),
+    });
+    setContatos((atual) => atual?.map((x) => (x.id === c.id ? { ...x, realizado: !c.realizado } : x)) ?? null);
+  }
+
   async function remover(id: string) {
+    if (papel === "COMISSAO") return; // GESTOR não pode remover
     if (!window.confirm("Remover esta mensagem?")) return;
     await fetch(`/api/admin/contatos/${id}`, { method: "DELETE" });
     recarregar();
@@ -70,11 +81,15 @@ export default function PainelContatos() {
                   </a>
                   <span>· {new Date(c.criadoEm).toLocaleDateString("pt-BR")}</span>
                   <span className={`rounded-full border px-2 py-1 text-[10px] font-bold uppercase tracking-wide ${c.lido ? "bg-[var(--paper-2)] text-[var(--ink)]/50 border-[var(--ink-faint)]" : "bg-[var(--gold-faint)] text-[var(--crimson)] border-[var(--gold-border)]"}`}>{c.lido ? "Lido" : "Novo"}</span>
+                  <span className={`rounded-full border px-2 py-1 text-[10px] font-bold uppercase tracking-wide ${c.realizado ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-white text-[var(--ink)]/40 border-[var(--ink-faint)]"}`}>{c.realizado ? "Contato realizado" : "Pendente contato"}</span>
                 </p>
               </div>
               <div className="flex items-center gap-2">
                 <button onClick={() => toggleLido(c)} className="rounded-full border border-[var(--ink-faint)] bg-white px-3 py-1.5 text-xs font-semibold text-[var(--ink)] hover:bg-[var(--paper-2)]">{c.lido ? "Marcar novo" : "Marcar lido"}</button>
-                <button onClick={() => remover(c.id)} className="rounded-full border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100">Remover</button>
+                <button onClick={() => toggleRealizado(c)} className={`rounded-full border px-3 py-1.5 text-xs font-semibold ${c.realizado ? "border-[var(--gold-border)] bg-[var(--gold-faint)] text-[var(--crimson)] hover:bg-white" : "border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"}`}>{c.realizado ? "Desmarcar realizado" : "Marcar contato realizado"}</button>
+                {papel !== "COMISSAO" && (
+                  <button onClick={() => remover(c.id)} className="rounded-full border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100">Remover</button>
+                )}
               </div>
             </div>
             {c.descricao && <p className="mt-3 rounded-xl bg-[var(--paper)] p-3 text-sm leading-relaxed text-[var(--ink-soft)]">{c.descricao}</p>}

@@ -8,8 +8,10 @@ export default withAuth(
     const papel = token?.papel;
     const pathname = req.nextUrl.pathname;
 
-    // API: bloqueia COMISSAO em rotas não-solicitacoes
-    if (pathname.startsWith("/api/admin/") && !pathname.startsWith("/api/admin/solicitacoes")) {
+    // API: COMISSAO (GESTOR) só acessa solicitacoes e contatos; diretoria acessa tudo
+    const allowedForComissao =
+      pathname.startsWith("/api/admin/solicitacoes") || pathname.startsWith("/api/admin/contatos");
+    if (pathname.startsWith("/api/admin/") && !allowedForComissao) {
       if (papel === "COMISSAO") {
         return new NextResponse(JSON.stringify({ erro: "Acesso restrito à diretoria" }), {
           status: 403,

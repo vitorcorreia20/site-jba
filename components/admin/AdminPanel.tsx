@@ -17,7 +17,10 @@ const abasDiretoria = [
   { id: "liderancas", label: "Lideranças" },
 ] as const;
 
-const abasComissao = [{ id: "solicitacoes", label: "Solicitações de admissão" }] as const;
+const abasComissao = [
+  { id: "solicitacoes", label: "Solicitações de admissão" },
+  { id: "contatos", label: "Contatos" },
+] as const;
 
 type Papel = "DIRETORIA" | "COMISSAO";
 type AbaIdDiretoria = (typeof abasDiretoria)[number]["id"];
@@ -58,13 +61,13 @@ export default function AdminPanel({ papel, emailAtual }: { papel: Papel; emailA
 
       {!isDiretoria && (
         <p className="mt-4 rounded-full border border-[var(--gold-border)] bg-[var(--gold-faint)] px-3 py-2 text-xs font-medium text-[var(--crimson)]">
-          Acesso de gestor: somente solicitações de admissão. Para editar membros/fotos/usuários, solicite acesso de Administração (Diretoria).
+          Acesso de gestor: solicitações e contatos (listar, marcar lido e marcar contato realizado). Para editar membros/fotos/usuários/lideranças, solicite Administração (Diretoria).
         </p>
       )}
 
       <div className="mt-6" role="tabpanel" id={`painel-${abaAtiva}`} aria-live="polite">
         {abaAtiva === "solicitacoes" && <PainelSolicitacoes />}
-        {isDiretoria && abaAtiva === "contatos" && <PainelContatos />}
+        {(isDiretoria || papel === "COMISSAO") && abaAtiva === "contatos" && <PainelContatos papel={papel} />}
         {isDiretoria && abaAtiva === "membros" && <PainelMembros />}
         {isDiretoria && abaAtiva === "liderancas" && <PainelLiderancas />}
         {isDiretoria && abaAtiva === "fotos" && <PainelFotos />}

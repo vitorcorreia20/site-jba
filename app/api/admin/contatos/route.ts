@@ -5,16 +5,17 @@ import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
-async function requireDiretoria() {
+async function requireContatoAccess() {
   const session = await getServerSession(authOptions);
   const papel = (session?.user as unknown as { papel?: string })?.papel;
   if (!session?.user) return NextResponse.json({ erro: "Não autenticado" }, { status: 401 });
-  if (papel !== "DIRETORIA") return NextResponse.json({ erro: "Acesso restrito à diretoria" }, { status: 403 });
+  if (papel !== "DIRETORIA" && papel !== "COMISSAO")
+    return NextResponse.json({ erro: "Acesso restrito" }, { status: 403 });
   return null;
 }
 
 export async function GET() {
-  const guard = await requireDiretoria();
+  const guard = await requireContatoAccess();
   if (guard) return guard;
   const contatos = await prisma.contato.findMany({ orderBy: { criadoEm: "desc" } });
   return NextResponse.json(contatos);
