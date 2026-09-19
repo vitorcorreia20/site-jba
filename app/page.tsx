@@ -3,10 +3,13 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import CopyPixButton from "@/components/CopyPixButton";
 import Historia from "@/components/Historia";
+import { getGestoes, getIdadeCapitulo } from "@/lib/capitulo";
 
 export const revalidate = 60;
 
 export default async function HomePage() {
+  const idade = getIdadeCapitulo();
+  const gestoes = getGestoes();
   const fotos = await prisma.fotoAcao
     .findMany({ orderBy: { ordem: "asc" } })
     .catch(() => []);
@@ -35,7 +38,7 @@ export default async function HomePage() {
           {/* Esquerda 7 cols */}
           <div className="lg:col-span-7">
             <p className="hero-in text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--gold-light)]/90">
-              Ordem DeMolay · 23 anos de história
+              Ordem DeMolay · {idade} anos de história
             </p>
 
             <h1 className="hero-in-2 mt-3 font-display text-[clamp(2.2rem,5vw,3.55rem)] font-semibold leading-[0.95] tracking-tight">
@@ -49,7 +52,7 @@ export default async function HomePage() {
 
             <p className="hero-in-3 mt-5 max-w-[52ch] text-[15px] leading-relaxed text-white/75">
               Formando jovens líderes através do civismo, da fraternidade e do
-              caráter — há 23 anos e 46 gestões servindo nossa comunidade.
+              caráter — há {idade} anos e {gestoes} gestões servindo nossa comunidade.
             </p>
 
             <div className="hero-in-3 mt-8 flex flex-wrap items-center gap-3">
@@ -71,11 +74,11 @@ export default async function HomePage() {
             <div className="hero-in-3 mt-8 flex flex-wrap gap-6 border-t border-white/10 pt-6 text-xs">
               <span className="flex items-center gap-2 text-white/60">
                 <span className="h-px w-6 bg-[var(--gold)]/50" />
-                <strong className="font-semibold text-white">23</strong> anos
+                <strong className="font-semibold text-white">{idade}</strong> anos
               </span>
               <span className="flex items-center gap-2 text-white/60">
                 <span className="h-px w-6 bg-[var(--gold)]/30" />
-                <strong className="font-semibold text-white">46</strong> gestões semestrais
+                <strong className="font-semibold text-white">{gestoes}</strong> gestões semestrais
               </span>
               <span className="flex items-center gap-2 text-white/60">
                 <span className="h-px w-6 bg-[var(--gold)]/30" />
@@ -164,7 +167,7 @@ export default async function HomePage() {
               Nossa história
             </p>
             <h2 className="mt-2 font-display text-[clamp(1.75rem,3.5vw,2.5rem)] font-semibold leading-tight tracking-tight text-[var(--crimson)]">
-              23 anos formando caráter,
+              {idade} anos formando caráter,
               <br />
               <span className="font-normal italic text-[var(--ink)]/80">gestão após gestão.</span>
             </h2>
@@ -201,11 +204,11 @@ export default async function HomePage() {
                 />
               </blockquote>
 
-              {/* stats 23 anos */}
+              {/* stats */}
               <div className="grid grid-cols-3 gap-3">
                 {[
-                  { n: "23", l: "anos de\n história" },
-                  { n: "46", l: "gestões\n semestrais" },
+                  { n: String(idade), l: "anos de\n história" },
+                  { n: String(gestoes), l: "gestões\n semestrais" },
                   { n: "512", l: "número do\n capítulo" },
                 ].map((s) => (
                   <div

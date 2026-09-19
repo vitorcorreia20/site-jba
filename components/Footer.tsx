@@ -1,6 +1,9 @@
 import Link from "next/link";
+import { getGestoes, getIdadeCapitulo } from "@/lib/capitulo";
 
 export default function Footer() {
+  const idade = getIdadeCapitulo();
+  const gestoes = getGestoes();
   return (
     <footer className="relative overflow-hidden bg-[var(--crimson-deep)] text-[var(--paper)]">
       {/* watermark 512 */}
@@ -31,11 +34,11 @@ export default function Footer() {
             </p>
           </div>
           <p className="mt-4 max-w-[32ch] text-[13px] leading-relaxed text-white/70">
-            Formando jovens líderes através do civismo, da fraternidade e do caráter — há 23 anos servindo nossa comunidade.
+            Formando jovens líderes através do civismo, da fraternidade e do caráter — há {idade} anos servindo nossa comunidade.
           </p>
           <p className="mt-3 inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--gold-light)]/90">
             <span className="h-px w-6 bg-[var(--gold)]/40" />
-            23 anos · 46 gestões
+            {idade} anos · {gestoes} gestões
           </p>
         </div>
 

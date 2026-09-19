@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { getGestoes, getIdadeCapitulo } from "@/lib/capitulo";
 
 export const revalidate = 60;
 export const metadata = {
@@ -23,6 +24,8 @@ function parseGestao(periodo: string): number {
 type Mestre = { id: string; nome: string; fotoUrl: string | null; periodo: string; ordem: number; criadoEm: Date };
 
 export default async function LiderancaPage() {
+  const idade = getIdadeCapitulo();
+  const gestoes = getGestoes();
   const mestresRaw = (await prisma.mestreConselheiro
     .findMany({ orderBy: { ordem: "asc" } })
     .catch(() => [])) as Mestre[];
@@ -43,7 +46,7 @@ export default async function LiderancaPage() {
           <h1 className="mt-2 font-display text-[clamp(1.9rem,4vw,2.75rem)] font-semibold leading-tight tracking-tight text-[var(--crimson)]">
             Mestres Conselheiros
             <br />
-            <span className="font-normal italic text-[var(--ink)]/70">23 anos, 46 gestões.</span>
+            <span className="font-normal italic text-[var(--ink)]/70">{idade} anos, {gestoes} gestões.</span>
           </h1>
           <p className="mt-4 max-w-prose text-[15px] leading-relaxed text-[var(--ink-soft)]">
             Todos os Mestres Conselheiros que já conduziram o Capítulo José Barreto de Albuquerque N°512, em ordem
@@ -104,8 +107,8 @@ export default async function LiderancaPage() {
           <div className="rounded-[18px] border border-dashed border-[var(--ink-faint)] bg-white p-10 text-center shadow-sm">
             <p className="numeral-watermark mx-auto text-5xl font-black text-[var(--ink)]/10">512</p>
             <p className="mx-auto mt-3 max-w-[46ch] text-sm leading-relaxed text-[var(--ink-soft)]">
-              O histórico de Mestres Conselheiros aparecerá aqui assim que for cadastrado pelo painel administrativo. São 46
-              gestões para contar 23 anos de história.
+              O histórico de Mestres Conselheiros aparecerá aqui assim que for cadastrado pelo painel administrativo. São {gestoes}
+              gestões para contar {idade} anos de história.
             </p>
             <Link
               href="/"
