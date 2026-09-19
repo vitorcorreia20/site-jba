@@ -27,6 +27,14 @@ export default function PainelLiderancas() {
 
   useEffect(recarregar, []);
 
+  function parseGestao(periodo: string): number {
+    const m = periodo.match(/^(\d{4})\.([12])$/);
+    if (m) return Number(m[1]) * 10 + Number(m[2]);
+    const y = periodo.match(/\b(19|20)\d{2}\b/);
+    if (y) return Number(y[0]) * 10;
+    return 0;
+  }
+
   async function handleSubmit(evento: FormEvent<HTMLFormElement>) {
     evento.preventDefault();
     setErro(null);
@@ -41,11 +49,16 @@ export default function PainelLiderancas() {
         return;
       }
     }
+    const periodoTrim = (dados.periodo as string)?.trim() ?? "";
+    if (!/^\d{4}\.[12]$/.test(periodoTrim)) {
+      setErro("Período deve ser no formato 2026.1 (ano.semestre, 1 ou 2). Ex: 2026.1 ou 2026.2");
+      return;
+    }
     const payload = {
       nome: (dados.nome as string)?.trim(),
-      periodo: (dados.periodo as string)?.trim(),
+      periodo: periodoTrim,
       fotoUrl: urlFoto || null,
-      ordem: dados.ordem,
+      ordem: String(parseGestao(periodoTrim)),
     };
     if (!payload.nome || !payload.periodo) {
       setErro("Nome e período são obrigatórios.");
@@ -87,8 +100,16 @@ export default function PainelLiderancas() {
             <input name="nome" required className="mt-1.5 w-full rounded-[12px] border border-[var(--ink-faint)] bg-white px-3 py-2.5 text-sm focus:border-[var(--gold)] focus:outline-none focus:ring-2 focus:ring-[var(--gold-faint)]" />
           </div>
           <div>
-            <label className="block text-[11px] font-semibold uppercase tracking-wide text-[var(--ink)]">Período * (ex: 2023 ou 2023/2024)</label>
-            <input name="periodo" required className="mt-1.5 w-full rounded-[12px] border border-[var(--ink-faint)] bg-white px-3 py-2.5 text-sm focus:border-[var(--gold)] focus:outline-none focus:ring-2 focus:ring-[var(--gold-faint)]" />
+            <label className="block text-[11px] font-semibold uppercase tracking-wide text-[var(--ink)]">Período * (ex: 2026.1)</label>
+            <input
+              name="periodo"
+              required
+              placeholder="2026.1"
+              pattern="\d{4}\.[12]"
+              title="Formato 2026.1 (ano.ponto.semestre 1 ou 2)"
+              className="mt-1.5 w-full rounded-[12px] border border-[var(--ink-faint)] bg-white px-3 py-2.5 text-sm focus:border-[var(--gold)] focus:outline-none focus:ring-2 focus:ring-[var(--gold-faint)]"
+            />
+            <p className="mt-1 text-[11px] text-[var(--ink)]/40">Formato <strong>AAAA.S</strong>: <code className="rounded bg-[var(--gold-faint)] px-1">2026.1</code> = 1º sem, <code className="rounded bg-[var(--gold-faint)] px-1">2026.2</code> = 2º sem.</p>
           </div>
           <CampoUploadImagem
             label="Foto"
@@ -98,10 +119,8 @@ export default function PainelLiderancas() {
             hint="JPG/PNG/WEBP até 4.5MB. Fallback: cole URL externa."
           />
           <input type="hidden" name="fotoUrl" value={fotoUrl} />
-          <div>
-            <label className="block text-[11px] font-semibold uppercase tracking-wide text-[var(--ink)]">Ordem</label>
-            <input name="ordem" type="number" placeholder="1" className="mt-1.5 w-full rounded-[12px] border border-[var(--ink-faint)] bg-white px-3 py-2.5 text-sm focus:border-[var(--gold)] focus:outline-none focus:ring-2 focus:ring-[var(--gold-faint)]" />
-          </div>
+          {/* Ordem calculada automaticamente de 2026.1; mantém input hidden para API */}
+          <input type="hidden" name="ordem" value="" />
           {erro && <p className="rounded-[10px] border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">{erro}</p>}
           {ok && <p className="rounded-[10px] border border-green-200 bg-green-50 px-3 py-2 text-xs text-green-700">{ok}</p>}
           <button type="submit" className="w-full rounded-full bg-[var(--crimson)] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[var(--crimson-deep)]">

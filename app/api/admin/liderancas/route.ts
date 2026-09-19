@@ -22,17 +22,37 @@ export async function GET() {
   return NextResponse.json(mestres);
 }
 
+function parseGestao(periodo: string): number {
+  const m = periodo.match(/^(\d{4})\.([12])$/);
+  if (m) return Number(m[1]) * 10 + Number(m[2]);
+  const y = periodo.match(/\b(19|20)\d{2}\b/);
+  if (y) return Number(y[0]) * 10;
+  return 0;
+}
+
 export async function POST(request: Request) {
   const guard = await requireDiretoria();
   if (guard) return guard;
   const dados = await request.json();
 
+  const periodo = String(dados.periodo ?? "").trim();
+  if (!/^\d{4}\.[12]$/.test(periodo)) {
+    return NextResponse.json(
+      { erro: "Período deve ser no formato 2026.1 (AAAA.S com S=1 ou 2). Ex: 2026.1 ou 2026.2" },
+      { status: 400 }
+    );
+  }
+  const nome = String(dados.nome ?? "").trim();
+  if (!nome) return NextResponse.json({ erro: "Nome obrigatório" }, { status: 400 });
+
+  const ordem = parseGestao(periodo);
+
   const mestre = await prisma.mestreConselheiro.create({
     data: {
-      nome: dados.nome,
+      nome,
       fotoUrl: dados.fotoUrl || null,
-      periodo: dados.periodo,
-      ordem: Number(dados.ordem) || 0,
+      periodo,
+      ordem,
     },
   });
 
