@@ -374,13 +374,13 @@ export default async function HomePage() {
                 Doações via PIX ajudam a manter materiais, eventos e ações sociais do capítulo. Copie a chave abaixo.
               </p>
               <div className="mt-5 rounded-[14px] border border-[var(--ink-faint)] bg-white p-4 shadow-sm">
-                <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--ink)]/50">Chave PIX (CPF)</p>
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--ink)]/50">Chave PIX (PicPay) — Copia e Cola</p>
                 <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
-                  <div>
-                    <p className="font-mono text-sm font-semibold tracking-wide text-[var(--crimson)]">087.376.533-85</p>
+                  <div className="min-w-0 flex-1">
+                    <p className="break-all font-mono text-[11px] font-semibold leading-relaxed tracking-wide text-[var(--crimson)] sm:text-xs">00020126580014br.gov.bcb.pix013633a3cb51-fa84-4660-8940-fd33b69dca6a5204000053039865802BR5924VITOR DOS SANTOS CORREIA6009Sao Paulo62290525REC6AB1280ED379B0444504526304A4BF</p>
                     <p className="text-xs text-[var(--ink)]/60">Titular: Vitor dos Santos Correia</p>
                   </div>
-                  <CopyPixButton pix="08737653385" />
+                  <CopyPixButton pix="00020126580014br.gov.bcb.pix013633a3cb51-fa84-4660-8940-fd33b69dca6a5204000053039865802BR5924VITOR DOS SANTOS CORREIA6009Sao Paulo62290525REC6AB1280ED379B0444504526304A4BF" />
                 </div>
               </div>
             </div>
