@@ -32,6 +32,18 @@ export default function PainelMembros() {
   const [removerAlvo, setRemoverAlvo] = useState<Membro | null>(null);
   const [confirmNome, setConfirmNome] = useState("");
 
+  // --- edição em card flutuante ---
+  const [editarAlvo, setEditarAlvo] = useState<Membro | null>(null);
+  const [editIdDemolay, setEditIdDemolay] = useState("");
+  const [editNome, setEditNome] = useState("");
+  const [editTipo, setEditTipo] = useState<"ATIVO" | "DIRETORIA">("ATIVO");
+  const [editFotoUrl, setEditFotoUrl] = useState("");
+  const [editCargoAtual, setEditCargoAtual] = useState("");
+  const [editHistorico, setEditHistorico] = useState("");
+  const [editPremios, setEditPremios] = useState<PremioDraft[]>([]);
+  const [editErro, setEditErro] = useState<string | null>(null);
+  const [salvandoEdit, setSalvandoEdit] = useState(false);
+
   function recarregar() {
     fetch("/api/admin/membros")
       .then((r) => r.json())
@@ -48,6 +60,16 @@ export default function PainelMembros() {
 
   useEffect(recarregar, []);
 
+  // fechamento via Esc — só para edição, remoção mantém só por botão
+  useEffect(() => {
+    if (!editarAlvo) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") fecharEdicao();
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [editarAlvo]);
+
   function addPremio() {
     setPremiosDraft((prev) => [...prev, { imagemUrl: "", legenda: "" }]);
   }
@@ -56,6 +78,109 @@ export default function PainelMembros() {
   }
   function removePremio(idx: number) {
     setPremiosDraft((prev) => prev.filter((_, i) => i !== idx));
+  }
+
+  // edição - prêmios
+  function addPremioEdit() {
+    setEditPremios((prev) => [...prev, { imagemUrl: "", legenda: "" }]);
+  }
+  function updatePremioEdit(idx: number, campo: keyof PremioDraft, valor: string) {
+    setEditPremios((prev) => prev.map((p, i) => (i === idx ? { ...p, [campo]: valor } : p)));
+  }
+  function removePremioEdit(idx: number) {
+    setEditPremios((prev) => prev.filter((_, i) => i !== idx));
+  }
+
+  function abrirEdicao(m: Membro) {
+    setEditarAlvo(m);
+    setEditIdDemolay(m.idDemolay);
+    setEditNome(m.nome);
+    setEditTipo(m.tipo);
+    setEditFotoUrl(m.fotoUrl ?? "");
+    setEditCargoAtual(m.cargoAtual ?? "");
+    setEditHistorico(m.historicoCargos ?? "");
+    setEditPremios(m.premios.map((p) => ({ imagemUrl: p.imagemUrl, legenda: p.legenda ?? "" })));
+    setEditErro(null);
+    setErro(null);
+    setOk(null);
+  }
+
+  function fecharEdicao() {
+    setEditarAlvo(null);
+    setEditErro(null);
+    setSalvandoEdit(false);
+  }
+
+  async function handleEditSalvar(evento: FormEvent<HTMLFormElement>) {
+    evento.preventDefault();
+    if (!editarAlvo) return;
+    setEditErro(null);
+    setErro(null);
+    setOk(null);
+
+    const idDemolay = editIdDemolay.trim();
+    if (idDemolay.length < 5 || idDemolay.length > 9) {
+      setEditErro("ID DeMolay deve ter entre 5 e 9 caracteres.");
+      return;
+    }
+    if (!/^\d+$/.test(idDemolay)) {
+      setEditErro("ID DeMolay deve conter apenas números.");
+      return;
+    }
+    if (!editNome.trim()) {
+      setEditErro("Nome é obrigatório.");
+      return;
+    }
+    const urlFoto = editFotoUrl.trim();
+    if (urlFoto) {
+      try {
+        new URL(urlFoto);
+      } catch {
+        setEditErro("URL da foto inválida.");
+        return;
+      }
+    }
+
+    const premios = editPremios
+      .map((p) => ({ imagemUrl: p.imagemUrl.trim(), legenda: p.legenda.trim() || null }))
+      .filter((p) => p.imagemUrl.length > 0)
+      .map((p, idx) => ({ imagemUrl: p.imagemUrl, legenda: p.legenda, ordem: idx }));
+
+    for (const p of premios) {
+      try {
+        new URL(p.imagemUrl);
+      } catch {
+        setEditErro(`URL de prêmio inválida: ${p.imagemUrl}`);
+        return;
+      }
+    }
+
+    const payload = {
+      idDemolay,
+      nome: editNome.trim(),
+      tipo: editTipo,
+      fotoUrl: urlFoto || null,
+      cargoAtual: editCargoAtual.trim() || null,
+      historicoCargos: editHistorico.trim() || null,
+      premios,
+    };
+
+    setSalvandoEdit(true);
+    const resp = await fetch(`/api/admin/membros/${editarAlvo.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    const json = await resp.json().catch(() => ({}));
+    setSalvandoEdit(false);
+    if (!resp.ok) {
+      setEditErro(json.erro || (json.detalhes ? JSON.stringify(json.detalhes) : "Erro ao salvar alterações"));
+      return;
+    }
+
+    setOk(`Membro #${idDemolay} atualizado com sucesso!`);
+    fecharEdicao();
+    recarregar();
   }
 
   async function handleSubmit(evento: FormEvent<HTMLFormElement>) {
@@ -228,7 +353,8 @@ export default function PainelMembros() {
         <h2 className="font-display text-[15px] font-semibold text-[var(--crimson)]">
           Membros cadastrados ({membros?.length ?? 0})
         </h2>
-        <p className="text-xs text-[var(--ink)]/40">Ordem crescente por ID. Excluir exige digitar o nome exato.</p>
+        <p className="text-xs text-[var(--ink)]/40">Ordem crescente por ID. Clique em Editar para alterar em card flutuante.</p>
+        {ok && <p className="mt-2 rounded-[10px] border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-700">{ok}</p>}
         <ul className="mt-4 space-y-2">
           {membros?.map((m) => (
             <li key={m.id} className="rounded-[12px] border border-[var(--ink-faint)] bg-white px-4 py-3 shadow-sm">
@@ -239,16 +365,24 @@ export default function PainelMembros() {
                   </span>
                   {m.nome}
                 </span>
-                <button
-                  onClick={() => {
-                    setRemoverAlvo(m);
-                    setConfirmNome("");
-                    setErro(null);
-                  }}
-                  className="shrink-0 rounded-full border border-red-200 bg-red-50 px-3 py-1 text-xs font-semibold text-red-700 hover:bg-red-100"
-                >
-                  Remover
-                </button>
+                <div className="flex shrink-0 gap-1.5">
+                  <button
+                    onClick={() => abrirEdicao(m)}
+                    className="rounded-full border border-[var(--ink-faint)] bg-white px-3 py-1 text-xs font-semibold text-[var(--ink)] hover:bg-[var(--paper-2)]"
+                  >
+                    Editar
+                  </button>
+                  <button
+                    onClick={() => {
+                      setRemoverAlvo(m);
+                      setConfirmNome("");
+                      setErro(null);
+                    }}
+                    className="shrink-0 rounded-full border border-red-200 bg-red-50 px-3 py-1 text-xs font-semibold text-red-700 hover:bg-red-100"
+                  >
+                    Remover
+                  </button>
+                </div>
               </div>
               <span className="text-xs text-[var(--ink)]/50">
                 {m.tipo === "ATIVO" ? "Ativo" : "Diretoria"}
@@ -280,6 +414,150 @@ export default function PainelMembros() {
           )}
         </ul>
       </div>
+
+      {editarAlvo && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
+          <div className="relative flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-[18px] border border-[var(--ink-faint)] bg-white shadow-strong">
+            <button
+              type="button"
+              onClick={fecharEdicao}
+              aria-label="Fechar"
+              className="absolute right-4 top-4 z-10 rounded-full border border-[var(--ink-faint)] bg-white p-2 text-[var(--ink)]/60 hover:bg-[var(--paper-2)] hover:text-[var(--ink)]"
+            >
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                <path d="M1 1L13 13M13 1L1 13" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+              </svg>
+            </button>
+            <div className="border-b border-[var(--ink-faint)] bg-[var(--paper)] px-6 py-4 pr-12">
+              <h3 className="font-display text-base font-semibold text-[var(--crimson)]">Editar membro</h3>
+              <p className="mt-1 text-xs text-[var(--ink)]/50">
+                Editando <span className="font-semibold text-[var(--ink)]">{editarAlvo.nome}</span>{" "}
+                <span className="rounded-full bg-[var(--crimson)] px-2 py-0.5 text-xs font-bold text-white">#{editarAlvo.idDemolay}</span>
+              </p>
+            </div>
+            <form onSubmit={handleEditSalvar} className="flex-1 space-y-3 overflow-y-auto px-6 py-4">
+              <div>
+                <label className="block text-[11px] font-semibold uppercase tracking-wide text-[var(--ink)]">ID DeMolay *</label>
+                <input
+                  value={editIdDemolay}
+                  onChange={(e) => setEditIdDemolay(e.target.value)}
+                  required
+                  placeholder="114329"
+                  className="mt-1.5 w-full rounded-[12px] border border-[var(--ink-faint)] bg-white px-3.5 py-2.5 text-sm focus:border-[var(--gold)] focus:outline-none focus:ring-2 focus:ring-[var(--gold-faint)]"
+                />
+              </div>
+              <div>
+                <label className="block text-[11px] font-semibold uppercase tracking-wide text-[var(--ink)]">Nome *</label>
+                <input
+                  value={editNome}
+                  onChange={(e) => setEditNome(e.target.value)}
+                  required
+                  placeholder="Nome completo"
+                  className="mt-1.5 w-full rounded-[12px] border border-[var(--ink-faint)] bg-white px-3.5 py-2.5 text-sm focus:border-[var(--gold)] focus:outline-none focus:ring-2 focus:ring-[var(--gold-faint)]"
+                />
+              </div>
+              <div>
+                <label className="block text-[11px] font-semibold uppercase tracking-wide text-[var(--ink)]">Tipo de quadro</label>
+                <select
+                  value={editTipo}
+                  onChange={(e) => setEditTipo(e.target.value as "ATIVO" | "DIRETORIA")}
+                  className="mt-1.5 w-full rounded-[12px] border border-[var(--ink-faint)] bg-white px-3 py-2.5 text-sm focus:border-[var(--gold)] focus:outline-none focus:ring-2 focus:ring-[var(--gold-faint)]"
+                >
+                  <option value="ATIVO">Quadro de ativos</option>
+                  <option value="DIRETORIA">Diretoria (aparece com card)</option>
+                </select>
+              </div>
+              <CampoUploadImagem
+                label="Foto do membro"
+                value={editFotoUrl}
+                onChange={setEditFotoUrl}
+                placeholder="https://... ou escolha arquivo"
+                hint="JPG/PNG/WEBP até 4.5MB. Fallback: cole URL externa."
+              />
+              <div>
+                <label className="block text-[11px] font-semibold uppercase tracking-wide text-[var(--ink)]">Cargo atual</label>
+                <input
+                  value={editCargoAtual}
+                  onChange={(e) => setEditCargoAtual(e.target.value)}
+                  placeholder="Mestre Conselheiro"
+                  className="mt-1.5 w-full rounded-[12px] border border-[var(--ink-faint)] bg-white px-3.5 py-2.5 text-sm placeholder:text-[var(--ink)]/30 focus:border-[var(--gold)] focus:outline-none focus:ring-2 focus:ring-[var(--gold-faint)]"
+                />
+              </div>
+              <div>
+                <label className="block text-[11px] font-semibold uppercase tracking-wide text-[var(--ink)]">Histórico de cargos (um por linha)</label>
+                <textarea
+                  value={editHistorico}
+                  onChange={(e) => setEditHistorico(e.target.value)}
+                  rows={3}
+                  placeholder={"2024.1 - Hospitaleiro\n2025 - Tesoureiro"}
+                  className="mt-1.5 w-full rounded-[12px] border border-[var(--ink-faint)] bg-white px-3.5 py-2.5 text-sm placeholder:text-[var(--ink)]/30 focus:border-[var(--gold)] focus:outline-none focus:ring-2 focus:ring-[var(--gold-faint)]"
+                />
+              </div>
+
+              <div className="rounded-[12px] border border-[var(--ink-faint)] bg-[var(--paper)] p-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-semibold uppercase tracking-wide text-[var(--ink)]">Prêmios e honrarias</span>
+                  <button
+                    type="button"
+                    onClick={addPremioEdit}
+                    className="rounded-full bg-[var(--crimson)] px-3 py-1 text-xs font-semibold text-white hover:bg-[var(--crimson-deep)]"
+                  >
+                    + Adicionar prêmio
+                  </button>
+                </div>
+                {editPremios.length === 0 && (
+                  <p className="mt-2 text-xs text-[var(--ink)]/40">Nenhum prêmio. Clique em “Adicionar prêmio”.</p>
+                )}
+                <div className="mt-3 space-y-3">
+                  {editPremios.map((p, idx) => (
+                    <div key={idx} className="rounded-[12px] border border-[var(--ink-faint)] bg-white p-3">
+                      <div className="mb-2 flex items-center justify-between">
+                        <span className="text-xs font-semibold text-[var(--ink)]/60">Prêmio #{idx + 1}</span>
+                        <button type="button" onClick={() => removePremioEdit(idx)} className="text-xs font-medium text-red-700 hover:underline">
+                          Remover
+                        </button>
+                      </div>
+                      <CampoUploadImagem
+                        label={`Imagem do prêmio #${idx + 1}`}
+                        value={p.imagemUrl}
+                        onChange={(v) => updatePremioEdit(idx, "imagemUrl", v)}
+                        placeholder="https://... ou escolha arquivo"
+                        hint="Upload sequencial (um por vez) até 4.5MB cada."
+                      />
+                      <input
+                        type="text"
+                        placeholder="Legenda (opcional) ex: Chevalier - 2024"
+                        value={p.legenda}
+                        onChange={(e) => updatePremioEdit(idx, "legenda", e.target.value)}
+                        className="mt-2 w-full rounded-[10px] border border-[var(--ink-faint)] bg-white px-3 py-2 text-sm focus:border-[var(--gold)] focus:outline-none focus:ring-2 focus:ring-[var(--gold-faint)]"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {editErro && <p className="rounded-[10px] border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{editErro}</p>}
+
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={fecharEdicao}
+                  className="rounded-full border border-[var(--ink-faint)] bg-white px-4 py-2 text-xs font-semibold text-[var(--ink)] hover:bg-[var(--paper-2)]"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={salvandoEdit}
+                  className="rounded-full bg-[var(--crimson)] px-5 py-2 text-xs font-semibold text-white hover:bg-[var(--crimson-deep)] disabled:opacity-40"
+                >
+                  {salvandoEdit ? "Salvando..." : "Salvar alterações"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {removerAlvo && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
