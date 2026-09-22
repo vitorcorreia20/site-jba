@@ -71,7 +71,7 @@ export default function PainelContatos({ papel }: { papel?: "DIRETORIA" | "COMIS
         const waUrl = `https://wa.me/55${telDigits}`;
         return (
           <div key={c.id} className="rounded-[16px] border border-[var(--ink-faint)] bg-white p-4 shadow-sm">
-            <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div className="min-w-0">
                 <p className="font-display text-[15px] font-semibold text-[var(--crimson)]">{c.nome}</p>
                 <p className="mt-1 flex flex-wrap items-center gap-2 text-xs text-[var(--ink)]/60">
@@ -84,17 +84,17 @@ export default function PainelContatos({ papel }: { papel?: "DIRETORIA" | "COMIS
                   <span className={`rounded-full border px-2 py-1 text-[10px] font-bold uppercase tracking-wide ${c.realizado ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-white text-[var(--ink)]/40 border-[var(--ink-faint)]"}`}>{c.realizado ? "Contato realizado" : "Pendente contato"}</span>
                 </p>
               </div>
-              <div className="flex items-center gap-2">
-                <button onClick={() => toggleLido(c)} className="rounded-full border border-[var(--ink-faint)] bg-white px-3 py-1.5 text-xs font-semibold text-[var(--ink)] hover:bg-[var(--paper-2)]">{c.lido ? "Marcar novo" : "Marcar lido"}</button>
-                <button onClick={() => toggleRealizado(c)} className={`rounded-full border px-3 py-1.5 text-xs font-semibold ${c.realizado ? "border-[var(--gold-border)] bg-[var(--gold-faint)] text-[var(--crimson)] hover:bg-white" : "border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"}`}>{c.realizado ? "Desmarcar realizado" : "Marcar contato realizado"}</button>
+              <div className="flex flex-wrap gap-2 sm:shrink-0 sm:justify-end">
+                <button onClick={() => toggleLido(c)} className="flex-1 rounded-full border border-[var(--ink-faint)] bg-white px-3 py-1.5 text-xs font-semibold text-[var(--ink)] hover:bg-[var(--paper-2)] sm:flex-none">{c.lido ? "Marcar novo" : "Marcar lido"}</button>
+                <button onClick={() => toggleRealizado(c)} className={`flex-1 rounded-full border px-3 py-1.5 text-xs font-semibold sm:flex-none ${c.realizado ? "border-[var(--gold-border)] bg-[var(--gold-faint)] text-[var(--crimson)] hover:bg-white" : "border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"}`}>{c.realizado ? "Desmarcar realizado" : "Marcar contato realizado"}</button>
                 {papel !== "COMISSAO" && (
-                  <button onClick={() => remover(c.id)} className="rounded-full border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100">Remover</button>
+                  <button onClick={() => remover(c.id)} className="w-full rounded-full border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100 sm:w-auto">Remover</button>
                 )}
               </div>
             </div>
-            {c.descricao && <p className="mt-3 rounded-xl bg-[var(--paper)] p-3 text-sm leading-relaxed text-[var(--ink-soft)]">{c.descricao}</p>}
+            {c.descricao && <p className="mt-3 rounded-xl bg-[var(--paper)] p-3 text-sm leading-relaxed text-[var(--ink-soft)] break-words">{c.descricao}</p>}
             <div className="mt-3">
-              <a href={waUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 rounded-full bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700">Abrir WhatsApp</a>
+              <a href={waUrl} target="_blank" rel="noopener noreferrer" className="inline-flex w-full items-center justify-center gap-1 rounded-full bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700 sm:w-auto">Abrir WhatsApp</a>
             </div>
           </div>
         );

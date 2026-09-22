@@ -5,30 +5,36 @@ import { prisma } from "@/lib/prisma";
 
 export const dynamic = 'force-dynamic';
 
-async function requireDiretoria() {
+async function requireAuth() {
   const session = await getServerSession(authOptions);
-  const papel = (session?.user as unknown as { papel?: string })?.papel;
-  if (!session?.user) return NextResponse.json({ erro: "Não autenticado" }, { status: 401 });
-  if (papel !== "DIRETORIA") return NextResponse.json({ erro: "Acesso restrito à diretoria" }, { status: 403 });
-  return null;
+  if (!session?.user) return { error: NextResponse.json({ erro: "Não autenticado" }, { status: 401 }) };
+  return { session };
 }
 
 export async function GET() {
-  const guard = await requireDiretoria();
-  if (guard) return guard;
+  const auth = await requireAuth();
+  if ("error" in auth) return auth.error;
   const fotos = await prisma.fotoAcao.findMany({ orderBy: { ordem: "asc" } });
   return NextResponse.json(fotos);
 }
 
 export async function POST(request: Request) {
-  const guard = await requireDiretoria();
-  if (guard) return guard;
+  const auth = await requireAuth();
+  if ("error" in auth) return auth.error;
   const dados = await request.json();
+
+  const url = typeof dados.url === "string" ? dados.url.trim() : "";
+  if (!url) return NextResponse.json({ erro: "URL da imagem é obrigatória" }, { status: 400 });
+  try {
+    new URL(url);
+  } catch {
+    return NextResponse.json({ erro: "URL da imagem inválida" }, { status: 400 });
+  }
 
   const foto = await prisma.fotoAcao.create({
     data: {
-      url: dados.url,
-      legenda: dados.legenda || null,
+      url,
+      legenda: typeof dados.legenda === "string" ? dados.legenda.trim() || null : null,
       ordem: Number(dados.ordem) || 0,
     },
   });

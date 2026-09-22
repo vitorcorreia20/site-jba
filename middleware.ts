@@ -8,9 +8,21 @@ export default withAuth(
     const papel = token?.papel;
     const pathname = req.nextUrl.pathname;
 
-    // API: COMISSAO (GESTOR) só acessa solicitacoes e contatos; diretoria acessa tudo
+    // API: COMISSAO (GESTOR) pode acessar solicitacoes, contatos e fotos (CRUD exceto DELETE); diretoria acessa tudo
+    const isComissaoFotosDelete =
+      papel === "COMISSAO" &&
+      req.method === "DELETE" &&
+      pathname.startsWith("/api/admin/fotos/");
+    if (isComissaoFotosDelete) {
+      return new NextResponse(JSON.stringify({ erro: "Apenas Administração pode excluir fotos" }), {
+        status: 403,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
     const allowedForComissao =
-      pathname.startsWith("/api/admin/solicitacoes") || pathname.startsWith("/api/admin/contatos");
+      pathname.startsWith("/api/admin/solicitacoes") ||
+      pathname.startsWith("/api/admin/contatos") ||
+      pathname.startsWith("/api/admin/fotos");
     if (pathname.startsWith("/api/admin/") && !allowedForComissao) {
       if (papel === "COMISSAO") {
         return new NextResponse(JSON.stringify({ erro: "Acesso restrito à diretoria" }), {

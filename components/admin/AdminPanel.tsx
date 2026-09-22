@@ -20,6 +20,7 @@ const abasDiretoria = [
 const abasComissao = [
   { id: "solicitacoes", label: "Solicitações de admissão" },
   { id: "contatos", label: "Contatos" },
+  { id: "fotos", label: "Fotos de ações" },
 ] as const;
 
 type Papel = "DIRETORIA" | "COMISSAO";
@@ -37,7 +38,11 @@ export default function AdminPanel({ papel, emailAtual }: { papel: Papel; emailA
 
   return (
     <div>
-      <div className="flex flex-wrap gap-2 border-b border-[var(--ink-faint)] pb-3" role="tablist" aria-label="Seções do painel">
+      <div
+        className="-mx-4 flex flex-nowrap gap-2 overflow-x-auto border-b border-[var(--ink-faint)] px-4 pb-3 sm:-mx-6 sm:px-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        role="tablist"
+        aria-label="Seções do painel"
+      >
         {abas.map((aba) => {
           const ativa = abaAtiva === aba.id;
           return (
@@ -47,7 +52,7 @@ export default function AdminPanel({ papel, emailAtual }: { papel: Papel; emailA
               aria-selected={ativa}
               aria-controls={`painel-${aba.id}`}
               onClick={() => setAbaAtiva(aba.id)}
-              className={`rounded-full px-4 py-2 text-xs font-semibold transition-colors ${
+              className={`shrink-0 whitespace-nowrap snap-start rounded-full px-4 py-2 text-xs font-semibold transition-colors ${
                 ativa
                   ? "bg-[var(--crimson)] text-white shadow"
                   : "bg-[var(--paper-2)] text-[var(--ink)]/60 hover:bg-white hover:text-[var(--crimson)] border border-[var(--ink-faint)]"
@@ -60,17 +65,17 @@ export default function AdminPanel({ papel, emailAtual }: { papel: Papel; emailA
       </div>
 
       {!isDiretoria && (
-        <p className="mt-4 rounded-full border border-[var(--gold-border)] bg-[var(--gold-faint)] px-3 py-2 text-xs font-medium text-[var(--crimson)]">
-          Acesso de gestor: solicitações e contatos (listar, marcar lido e marcar contato realizado). Para editar membros/fotos/usuários/lideranças, solicite Administração (Diretoria).
+        <p className="mt-4 rounded-[12px] border border-[var(--gold-border)] bg-[var(--gold-faint)] px-3 py-2 text-xs font-medium leading-relaxed text-[var(--crimson)] sm:rounded-full">
+          Acesso de gestor: solicitações, contatos e fotos de ações (adicionar e editar). Exclusão apenas pela Administração. Para editar membros/usuários/lideranças, solicite Administração (Diretoria).
         </p>
       )}
 
-      <div className="mt-6" role="tabpanel" id={`painel-${abaAtiva}`} aria-live="polite">
+      <div className="mt-4 sm:mt-6" role="tabpanel" id={`painel-${abaAtiva}`} aria-live="polite">
         {abaAtiva === "solicitacoes" && <PainelSolicitacoes papel={papel} />}
         {(isDiretoria || papel === "COMISSAO") && abaAtiva === "contatos" && <PainelContatos papel={papel} />}
+        {(isDiretoria || papel === "COMISSAO") && abaAtiva === "fotos" && <PainelFotos papel={papel} />}
         {isDiretoria && abaAtiva === "membros" && <PainelMembros />}
         {isDiretoria && abaAtiva === "liderancas" && <PainelLiderancas />}
-        {isDiretoria && abaAtiva === "fotos" && <PainelFotos />}
         {isDiretoria && abaAtiva === "usuarios" && <PainelUsuarios emailAtual={emailAtual} />}
       </div>
     </div>
