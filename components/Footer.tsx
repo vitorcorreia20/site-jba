@@ -40,6 +40,32 @@ export default function Footer() {
             <span className="h-px w-6 bg-[var(--gold)]/40" />
             {idade} anos · {gestoes} gestões
           </p>
+          <a
+            href="https://www.instagram.com/cap_jba512"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Instagram do Capítulo — @cap_jba512 (abre em nova aba)"
+            className="mt-4 inline-flex items-center gap-2 text-[13px] font-medium text-white/75 transition-colors hover:text-[var(--gold-light)]"
+          >
+            <svg
+              aria-hidden="true"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.7"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="h-[18px] w-[18px] shrink-0"
+            >
+              <rect x="2" y="2" width="20" height="20" rx="5" />
+              <circle cx="12" cy="12" r="5" />
+              <circle cx="17.5" cy="6.5" r="1.2" fill="currentColor" stroke="none" />
+            </svg>
+            @cap_jba512
+            <span aria-hidden className="text-[11px] opacity-60">
+              ↗
+            </span>
+          </a>
         </div>
 
         {/* Col 2 – Navegação */}

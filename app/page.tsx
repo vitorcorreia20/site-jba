@@ -3,6 +3,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import CopyPixButton from "@/components/CopyPixButton";
 import Historia from "@/components/Historia";
+import InstagramSection from "@/components/InstagramSection";
 import { getGestoes, getIdadeCapitulo } from "@/lib/capitulo";
 
 export const revalidate = 60;
@@ -324,6 +325,9 @@ export default async function HomePage() {
           )}
         </div>
       </section>
+
+      {/* ========== INSTAGRAM – editorial paper ========== */}
+      <InstagramSection />
 
       {/* ========== APOIO – solene crimson-deep ========== */}
       <section className="relative overflow-hidden bg-[var(--crimson-deep)] text-[var(--paper)]">
