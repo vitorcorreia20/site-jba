@@ -58,9 +58,6 @@ export default function InstagramSection() {
               @cap_jba512
               <span aria-hidden>→</span>
             </a>
-            <span className="inline-flex items-center gap-2 text-xs text-[var(--ink)]/50">
-              <span className="h-px w-6 bg-[var(--gold)]/30" /> Abre em nova aba
-            </span>
           </div>
         </div>
 
