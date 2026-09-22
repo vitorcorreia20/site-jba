@@ -335,12 +335,6 @@ export default async function HomePage() {
           aria-hidden
           className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_70%_50%_at_20%_30%,rgba(201,162,39,0.08),transparent_60%)]"
         />
-        <div
-          aria-hidden
-          className="numeral-watermark pointer-events-none absolute -right-10 bottom-0 select-none text-[28vw] font-black leading-none text-white/[0.03]"
-        >
-          512
-        </div>
 
         <div className="relative mx-auto grid max-w-6xl gap-8 px-6 py-14 sm:py-16 lg:grid-cols-12 lg:items-center lg:py-18">
           <div className="lg:col-span-7">
