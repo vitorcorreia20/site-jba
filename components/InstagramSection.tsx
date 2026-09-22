@@ -22,14 +22,6 @@ function InstagramIcon({ className = "h-5 w-5" }: { className?: string }) {
 export default function InstagramSection() {
   return (
     <section className="relative overflow-hidden border-y border-[var(--gold-border)] bg-[var(--paper)]">
-      {/* watermark 512 sutil */}
-      <div
-        aria-hidden
-        className="numeral-watermark pointer-events-none absolute -right-8 bottom-0 select-none text-[26vw] font-black leading-none text-[var(--crimson)]/[0.035] lg:text-[16vw]"
-      >
-        512
-      </div>
-
       <div className="relative mx-auto grid max-w-6xl gap-8 px-6 py-14 sm:py-16 lg:grid-cols-12 lg:items-center lg:gap-12 lg:py-20">
         {/* Esquerda – editorial */}
         <div className="lg:col-span-7">
