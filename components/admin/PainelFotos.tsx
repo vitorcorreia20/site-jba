@@ -7,8 +7,21 @@ type Foto = {
   id: string;
   url: string;
   legenda: string | null;
-  ordem: number;
+  dataRealizada: string;
+  criadoEm: string;
 };
+
+function hojeISO(): string {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function isoToDateInput(iso: string | null | undefined): string {
+  if (!iso) return hojeISO();
+  // iso may be full datetime; extract YYYY-MM-DD
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return hojeISO();
+  return d.toISOString().slice(0, 10);
+}
 
 export default function PainelFotos({ papel }: { papel?: "DIRETORIA" | "COMISSAO" } = {}) {
   const isDiretoria = papel === "DIRETORIA";
@@ -21,7 +34,7 @@ export default function PainelFotos({ papel }: { papel?: "DIRETORIA" | "COMISSAO
   const [editarAlvo, setEditarAlvo] = useState<Foto | null>(null);
   const [editUrl, setEditUrl] = useState("");
   const [editLegenda, setEditLegenda] = useState("");
-  const [editOrdem, setEditOrdem] = useState("");
+  const [editData, setEditData] = useState("");
   const [editErro, setEditErro] = useState<string | null>(null);
   const [salvandoEdit, setSalvandoEdit] = useState(false);
 
@@ -53,7 +66,7 @@ export default function PainelFotos({ papel }: { papel?: "DIRETORIA" | "COMISSAO
     setEditarAlvo(f);
     setEditUrl(f.url);
     setEditLegenda(f.legenda ?? "");
-    setEditOrdem(String(f.ordem ?? 0));
+    setEditData(isoToDateInput(f.dataRealizada));
     setEditErro(null);
     setErro(null);
     setOk(null);
@@ -80,11 +93,15 @@ export default function PainelFotos({ papel }: { papel?: "DIRETORIA" | "COMISSAO
       setEditErro("URL da imagem inválida.");
       return;
     }
+    if (!editData) {
+      setEditErro("Informe a data em que a atividade foi realizada. Se deixar vazio, será usada a data de hoje.");
+      return;
+    }
     setSalvandoEdit(true);
     const resp = await fetch(`/api/admin/fotos/${editarAlvo.id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ url, legenda: editLegenda.trim() || null, ordem: editOrdem }),
+      body: JSON.stringify({ url, legenda: editLegenda.trim() || null, dataRealizada: editData }),
     });
     const json = await resp.json().catch(() => ({}));
     setSalvandoEdit(false);
@@ -113,10 +130,15 @@ export default function PainelFotos({ papel }: { papel?: "DIRETORIA" | "COMISSAO
       setErro("URL da imagem inválida.");
       return;
     }
+    const dataRealizada = (dados.dataRealizada as string)?.trim() || "";
+    if (!dataRealizada) {
+      setErro("Informe a data em que a atividade foi realizada. (Se não informar, será usada a data de hoje)");
+      return;
+    }
     const resp = await fetch("/api/admin/fotos", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ url, legenda: dados.legenda, ordem: dados.ordem }),
+      body: JSON.stringify({ url, legenda: dados.legenda, dataRealizada }),
     });
     const json = await resp.json().catch(() => ({}));
     if (!resp.ok) {
@@ -168,8 +190,17 @@ export default function PainelFotos({ papel }: { papel?: "DIRETORIA" | "COMISSAO
             <input name="legenda" placeholder="Ex: Ação social - 2024" className="mt-1.5 w-full rounded-[12px] border border-[var(--ink-faint)] bg-white px-3 py-2.5 text-sm focus:border-[var(--gold)] focus:outline-none focus:ring-2 focus:ring-[var(--gold-faint)]" />
           </div>
           <div>
-            <label className="block text-[11px] font-semibold uppercase tracking-wide text-[var(--ink)]">Ordem</label>
-            <input name="ordem" type="number" placeholder="0" className="mt-1.5 w-full rounded-[12px] border border-[var(--ink-faint)] bg-white px-3 py-2.5 text-sm focus:border-[var(--gold)] focus:outline-none focus:ring-2 focus:ring-[var(--gold-faint)]" />
+            <label className="block text-[11px] font-semibold uppercase tracking-wide text-[var(--ink)]">
+              Data da atividade <span className="text-red-600">*</span>
+            </label>
+            <input
+              name="dataRealizada"
+              type="date"
+              required
+              defaultValue={hojeISO()}
+              className="mt-1.5 w-full rounded-[12px] border border-[var(--ink-faint)] bg-white px-3 py-2.5 text-sm focus:border-[var(--gold)] focus:outline-none focus:ring-2 focus:ring-[var(--gold-faint)]"
+            />
+            <p className="mt-1 text-[11px] leading-snug text-[var(--ink)]/50">Informe a data em que a atividade foi realizada. Se não informar, será usada a data de hoje. Formato exibido como dd/mm/yyyy.</p>
           </div>
           {erro && <p className="rounded-[10px] border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">{erro}</p>}
           {ok && <p className="rounded-[10px] border border-green-200 bg-green-50 px-3 py-2 text-xs text-green-700">{ok}</p>}
@@ -192,7 +223,6 @@ export default function PainelFotos({ papel }: { papel?: "DIRETORIA" | "COMISSAO
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium text-[var(--ink)] sm:break-all">{f.legenda || f.url}</p>
-                  <p className="text-[11px] text-[var(--ink)]/40">Ordem: {f.ordem}</p>
                 </div>
               </div>
               <div className="flex w-full gap-1.5 sm:w-auto sm:shrink-0">
@@ -236,7 +266,7 @@ export default function PainelFotos({ papel }: { papel?: "DIRETORIA" | "COMISSAO
             </button>
             <div className="border-b border-[var(--ink-faint)] bg-[var(--paper)] px-4 py-4 pr-12 sm:px-6">
               <h3 className="font-display text-base font-semibold text-[var(--crimson)]">Editar foto</h3>
-              <p className="mt-1 text-xs text-[var(--ink)]/50">Altere legenda, ordem ou substitua a imagem.</p>
+              <p className="mt-1 text-xs text-[var(--ink)]/50">Altere legenda, data ou substitua a imagem.</p>
             </div>
             <form onSubmit={handleEditSalvar} className="space-y-3 px-4 py-4 sm:px-6">
               <CampoUploadImagem
@@ -257,14 +287,17 @@ export default function PainelFotos({ papel }: { papel?: "DIRETORIA" | "COMISSAO
                 />
               </div>
               <div>
-                <label className="block text-[11px] font-semibold uppercase tracking-wide text-[var(--ink)]">Ordem</label>
+                <label className="block text-[11px] font-semibold uppercase tracking-wide text-[var(--ink)]">
+                  Data da atividade <span className="text-red-600">*</span>
+                </label>
                 <input
-                  value={editOrdem}
-                  onChange={(e) => setEditOrdem(e.target.value)}
-                  type="number"
-                  placeholder="0"
+                  value={editData}
+                  onChange={(e) => setEditData(e.target.value)}
+                  type="date"
+                  required
                   className="mt-1.5 w-full rounded-[12px] border border-[var(--ink-faint)] bg-white px-3 py-2.5 text-sm focus:border-[var(--gold)] focus:outline-none focus:ring-2 focus:ring-[var(--gold-faint)]"
                 />
+                <p className="mt-1 text-[11px] leading-snug text-[var(--ink)]/50">Informe a data em que a atividade foi realizada. Se não informar, será usada a data de hoje.</p>
               </div>
               {editErro && <p className="rounded-[10px] border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">{editErro}</p>}
               <div className="flex justify-end gap-2 pt-2">

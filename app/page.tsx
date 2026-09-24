@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import CopyPixButton from "@/components/CopyPixButton";
 import Historia from "@/components/Historia";
 import InstagramSection from "@/components/InstagramSection";
+import HeroCarrossel from "@/components/HeroCarrossel";
 import { getGestoes, getIdadeCapitulo } from "@/lib/capitulo";
 
 export const revalidate = 60;
@@ -12,11 +13,10 @@ export default async function HomePage() {
   const idade = getIdadeCapitulo();
   const gestoes = getGestoes();
   const fotos = await prisma.fotoAcao
-    .findMany({ orderBy: { ordem: "asc" } })
+    .findMany({ orderBy: { dataRealizada: "desc" } })
     .catch(() => []);
 
-  const fotoDestaque = fotos[0];
-  const demaisFotos = fotos.slice(1);
+  const fotosCarrossel = fotos.slice(0, 7);
 
   return (
     <>
@@ -88,46 +88,10 @@ export default async function HomePage() {
             </div>
           </div>
 
-          {/* Direita 5 cols – foto destaque / placeholder */}
+          {/* Direita 5 cols – carrossel hero (7 últimas, troca a cada 7s) */}
           <div className="hero-in-3 lg:col-span-5">
             <div className="relative">
-              {/* moldura dourada sutil */}
-              <div className="relative overflow-hidden rounded-[18px] border border-[var(--gold)]/25 bg-[var(--crimson-deep)] p-[5px] shadow-strong">
-                <div className="relative aspect-[4/3.4] overflow-hidden rounded-[13px] bg-[var(--paper-2)]">
-                  {fotoDestaque ? (
-                    <>
-                      <Image
-                        src={fotoDestaque.url}
-                        alt={fotoDestaque.legenda ?? "Ação do capítulo em destaque"}
-                        fill
-                        priority
-                        sizes="(max-width: 1024px) 100vw, 42vw"
-                        className="object-cover transition-transform duration-700 hover:scale-[1.02]"
-                      />
-                      {fotoDestaque.legenda && (
-                        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent p-4 pt-10">
-                          <p className="text-sm font-medium leading-snug text-white drop-shadow">
-                            {fotoDestaque.legenda}
-                          </p>
-                        </div>
-                      )}
-                    </>
-                  ) : (
-                    <div className="flex h-full flex-col items-center justify-center gap-3 bg-[var(--paper-2)] p-8 text-center">
-                      <span className="numeral-watermark text-6xl font-black text-[var(--crimson)]/10">
-                        512
-                      </span>
-                      <p className="font-display text-lg font-semibold text-[var(--crimson)]">
-                        Nossas ações em imagens
-                      </p>
-                      <p className="max-w-[28ch] text-sm leading-relaxed text-[var(--ink-soft)]">
-                        As fotos das atividades aparecerão aqui assim que forem
-                        cadastradas no painel administrativo.
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </div>
+              <HeroCarrossel fotos={fotosCarrossel} />
 
               {/* selo lacre inferior esquerdo – tipográfico */}
               <div className="absolute -bottom-4 -left-3 hidden items-center gap-2 rounded-full border border-[var(--gold)]/30 bg-[var(--paper)] px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-[var(--crimson)] shadow-soft sm:flex">

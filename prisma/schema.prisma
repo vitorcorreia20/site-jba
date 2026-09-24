@@ -90,11 +90,11 @@ model SolicitacaoAdmissao {
 
 // Fotos de ações do capítulo exibidas na Home
 model FotoAcao {
-  id        String   @id @default(cuid())
-  url       String
-  legenda   String?
-  ordem     Int      @default(0)
-  criadoEm  DateTime @default(now())
+  id            String   @id @default(cuid())
+  url           String
+  legenda       String?
+  dataRealizada DateTime @default(now())
+  criadoEm      DateTime @default(now())
 }
 
 // Mensagem enviada pelo formulário de Contato (nome/telefone/descricao)

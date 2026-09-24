@@ -1,0 +1,5 @@
+ALTER TABLE "FotoAcao" ADD COLUMN IF NOT EXISTS "dataRealizada" TIMESTAMP(3);
+UPDATE "FotoAcao" SET "dataRealizada" = "criadoEm" WHERE "dataRealizada" IS NULL;
+ALTER TABLE "FotoAcao" ALTER COLUMN "dataRealizada" SET NOT NULL;
+ALTER TABLE "FotoAcao" ALTER COLUMN "dataRealizada" SET DEFAULT CURRENT_TIMESTAMP;
+ALTER TABLE "FotoAcao" DROP COLUMN IF EXISTS "ordem";

@@ -27,7 +27,18 @@ export async function PATCH(
   const { id } = await params;
   const dados = await request.json().catch(() => ({}));
 
-  const update: { url?: string; legenda?: string | null; ordem?: number } = {};
+  const update: { url?: string; legenda?: string | null; dataRealizada?: Date } = {};
+
+  function parseDataRealizada(valor: unknown): Date | null {
+    if (typeof valor !== "string" || !valor.trim()) return null;
+    const str = valor.trim();
+    if (/^\d{4}-\d{2}-\d{2}$/.test(str)) {
+      const d = new Date(str + "T12:00:00");
+      return isNaN(d.getTime()) ? null : d;
+    }
+    const d = new Date(str);
+    return isNaN(d.getTime()) ? null : d;
+  }
 
   if (typeof dados.url === "string") {
     const url = dados.url.trim();
@@ -42,8 +53,10 @@ export async function PATCH(
   if (typeof dados.legenda === "string" || dados.legenda === null) {
     update.legenda = typeof dados.legenda === "string" ? dados.legenda.trim() || null : null;
   }
-  if (dados.ordem !== undefined) {
-    update.ordem = Number(dados.ordem) || 0;
+  if (dados.dataRealizada !== undefined) {
+    const parsed = parseDataRealizada(dados.dataRealizada);
+    if (!parsed) return NextResponse.json({ erro: "Data da atividade inválida. Use formato dd/mm/yyyy" }, { status: 400 });
+    update.dataRealizada = parsed;
   }
 
   if (Object.keys(update).length === 0) {
