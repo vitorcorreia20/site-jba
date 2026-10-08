@@ -126,9 +126,7 @@ export default function Historia() {
       <p>
         Em <strong className="font-semibold text-[var(--ink)]">2013</strong>, Parnaíba recebeu o{" "}
         <strong className="font-semibold text-[var(--ink)]">Congresso Piauiense da Ordem DeMolay</strong>, reunindo membros de
-        diferentes partes do estado e contando com participação de membros do JBA. Na ocasião,{" "}
-        <strong className="font-semibold text-[var(--ink)]">Rodrigo Briam</strong>, do Capítulo José Barreto de Albuquerque nº 512,
-        foi eleito Mestre Conselheiro Estadual Adjunto.
+        diferentes partes do estado e contando com participação de membros do JBA.
       </p>
       <p>
         São momentos como esses que mostram que a história de um Capítulo não se limita às paredes de seu Templo. Ela também é
