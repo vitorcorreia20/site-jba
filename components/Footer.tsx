@@ -30,42 +30,54 @@ export default function Footer() {
             <p className="font-display text-[15px] font-semibold leading-tight">
               Capítulo José Barreto
               <br />
-              <span className="font-normal text-white/80">de Albuquerque N°512</span>
+              <span className="font-normal text-white/80">
+                de Albuquerque N°512
+              </span>
             </p>
           </div>
           <p className="mt-4 max-w-[32ch] text-[13px] leading-relaxed text-white/70">
-            Formando jovens líderes através do civismo, da fraternidade e do caráter — há {idade} anos servindo nossa comunidade.
+            Formando jovens líderes através do civismo, da fraternidade e do
+            caráter — há {idade} anos servindo nossa comunidade.
           </p>
-          <p className="mt-3 inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--gold-light)]/90">
-            <span className="h-px w-6 bg-[var(--gold)]/40" />
-            {idade} anos · {gestoes} gestões
-          </p>
-          <a
-            href="https://www.instagram.com/cap_jba512"
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="Instagram do Capítulo — @cap_jba512 (abre em nova aba)"
-            className="mt-4 inline-flex items-center gap-2 text-[13px] font-medium text-white/75 transition-colors hover:text-[var(--gold-light)]"
-          >
-            <svg
-              aria-hidden="true"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.7"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="h-[18px] w-[18px] shrink-0"
+          <div className="mt-5 flex flex-wrap items-center gap-6">
+            <p className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--gold-light)]/90">
+              <span className="h-px w-6 bg-[var(--gold)]/40" />
+              {idade} anos · {gestoes} gestões
+            </p>
+
+            <a
+              href="https://www.instagram.com/cap_jba512"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Instagram do Capítulo — @cap_jba512 (abre em nova aba)"
+              className="inline-flex items-center gap-2 text-[13px] font-medium text-white/75 transition-colors hover:text-[var(--gold-light)]"
             >
-              <rect x="2" y="2" width="20" height="20" rx="5" />
-              <circle cx="12" cy="12" r="5" />
-              <circle cx="17.5" cy="6.5" r="1.2" fill="currentColor" stroke="none" />
-            </svg>
-            @cap_jba512
-            <span aria-hidden className="text-[11px] opacity-60">
-              ↗
-            </span>
-          </a>
+              <svg
+                aria-hidden="true"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.7"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="h-[18px] w-[18px] shrink-0"
+              >
+                <rect x="2" y="2" width="20" height="20" rx="5" />
+                <circle cx="12" cy="12" r="5" />
+                <circle
+                  cx="17.5"
+                  cy="6.5"
+                  r="1.2"
+                  fill="currentColor"
+                  stroke="none"
+                />
+              </svg>
+              @cap_jba512
+              <span aria-hidden className="text-[11px] opacity-60">
+                ↗
+              </span>
+            </a>
+          </div>
         </div>
 
         {/* Col 2 – Navegação */}
@@ -75,17 +87,26 @@ export default function Footer() {
           </p>
           <ul className="mt-4 space-y-2.5 text-[13px] text-white/75">
             <li>
-              <Link href="/" className="transition-colors hover:text-[var(--gold-light)]">
+              <Link
+                href="/"
+                className="transition-colors hover:text-[var(--gold-light)]"
+              >
                 Início
               </Link>
             </li>
             <li>
-              <Link href="/lideranca" className="transition-colors hover:text-[var(--gold-light)]">
+              <Link
+                href="/lideranca"
+                className="transition-colors hover:text-[var(--gold-light)]"
+              >
                 Quadro de lideranças
               </Link>
             </li>
             <li>
-              <Link href="/ativos" className="transition-colors hover:text-[var(--gold-light)]">
+              <Link
+                href="/ativos"
+                className="transition-colors hover:text-[var(--gold-light)]"
+              >
                 Quadro de ativos
               </Link>
             </li>
@@ -98,7 +119,8 @@ export default function Footer() {
             Faça parte
           </p>
           <p className="mt-4 text-[13px] leading-relaxed text-white/70">
-            Quer trilhar esse caminho? Fale com a diretoria e conheça o processo de admissão.
+            Quer trilhar esse caminho? Fale com a diretoria e conheça o processo
+            de admissão.
           </p>
           <Link
             href="/quero-fazer-parte"
@@ -111,8 +133,13 @@ export default function Footer() {
 
       <div className="relative border-t border-white/10">
         <div className="mx-auto flex max-w-6xl flex-col gap-2 px-6 py-5 text-[11px] leading-relaxed text-white/45 sm:flex-row sm:items-center sm:justify-between">
-          <p>Capítulo José Barreto de Albuquerque N°512 — Ordem DeMolay · Juventude, liderança e caráter.</p>
-          <p className="text-white/30">Site institucional · Atualizado periodicamente</p>
+          <p>
+            Capítulo José Barreto de Albuquerque N°512 — Ordem DeMolay ·
+            Juventude, liderança e caráter.
+          </p>
+          <p className="text-white/30">
+            Site institucional · Atualizado periodicamente
+          </p>
         </div>
       </div>
     </footer>
