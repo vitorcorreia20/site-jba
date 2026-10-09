@@ -154,7 +154,7 @@ export default async function HomePage() {
             </div>
 
             {/* lateral editorial – 5 cols */}
-            <div className="space-y-6 lg:col-span-5">
+            <div className="space-y-6 lg:col-span-5 lg:sticky lg:top-32 lg:self-start">
               {/* pull-quote */}
               <blockquote className="relative border-l-2 border-[var(--gold)] bg-white px-6 py-6 shadow-soft">
                 <p className="font-display text-[17px] font-medium italic leading-relaxed text-[var(--ink)]">
