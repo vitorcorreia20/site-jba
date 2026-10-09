@@ -22,9 +22,7 @@ export default async function AdminPage() {
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-6 sm:gap-4 sm:px-6 sm:py-8">
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[var(--gold)]/30 bg-[var(--crimson-deep)] font-display text-xs font-bold text-[var(--gold)]">
-                512
-              </span>
+              
               <h1 className="font-display text-xl font-semibold tracking-tight text-[var(--crimson)] sm:text-2xl">
                 Painel admin
               </h1>
@@ -39,7 +37,7 @@ export default async function AdminPage() {
               </span>
             </div>
             <p className="mt-2 truncate text-sm text-[var(--ink)]/60">
-              Logado como <span className="font-medium text-[var(--ink)]">{session?.user?.name ?? session?.user?.email}</span>
+              Seja Bem Vindo, <span className="font-medium text-[var(--ink)]">{session?.user?.name ?? session?.user?.email}</span>
             </p>
           </div>
           <BotaoSair />

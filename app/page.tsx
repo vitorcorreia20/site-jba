@@ -63,12 +63,12 @@ export default async function HomePage() {
               >
                 Quero fazer parte <span aria-hidden>→</span>
               </Link>
-              <Link
+              <a
                 href="#historia"
                 className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-6 py-3 text-[14px] font-medium text-white/85 backdrop-blur transition-colors hover:bg-white/10 hover:text-white"
               >
                 Conheça nossa história
-              </Link>
+              </a>
             </div>
 
             {/* stats discretas */}
@@ -94,7 +94,7 @@ export default async function HomePage() {
               <HeroCarrossel fotos={fotosCarrossel} />
 
               {/* selo lacre inferior esquerdo – tipográfico */}
-              <div className="absolute -bottom-4 -left-3 hidden items-center gap-2 rounded-full border border-[var(--gold)]/30 bg-[var(--paper)] px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-[var(--crimson)] shadow-soft sm:flex">
+              <div className="absolute -bottom-6 -left-3 hidden items-center gap-2 rounded-full border border-[var(--gold)]/30 bg-[var(--paper)] px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-[var(--crimson)] shadow-soft sm:flex">
                 <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--gold)] text-[10px] font-black text-[var(--crimson-deep)]">
                   512
                 </span>

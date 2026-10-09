@@ -39,7 +39,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="pt-BR" className={`${fraunces.variable} ${instrumentSans.variable}`}>
+    <html
+      lang="pt-BR"
+      className={`${fraunces.variable} ${instrumentSans.variable} scroll-smooth`}
+    >
       <body className="font-sans flex min-h-screen flex-col antialiased">
         <a href="#conteudo" className="skip-link">
           Pular para o conteúdo
