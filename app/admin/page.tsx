@@ -47,9 +47,7 @@ export default async function AdminPage() {
       </section>
 
       <section className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8">
-        <div className="rounded-[18px] border border-[var(--ink-faint)] bg-white p-4 shadow-soft sm:p-6 lg:p-8">
-          <AdminPanel papel={papel as "DIRETORIA" | "COMISSAO"} emailAtual={session.user?.email ?? undefined} />
-        </div>
+        <AdminPanel papel={papel as "DIRETORIA" | "COMISSAO"} emailAtual={session.user?.email ?? undefined} />
       </section>
     </div>
   );
