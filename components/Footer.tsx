@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { getGestoes, getIdadeCapitulo } from "@/lib/capitulo";
+import Image from "next/image";
 
 export default function Footer() {
   const idade = getIdadeCapitulo();
   const gestoes = getGestoes();
+
   return (
     <footer className="relative overflow-hidden bg-[var(--crimson-deep)] text-[var(--paper)]">
       {/* watermark 512 */}
@@ -15,17 +17,24 @@ export default function Footer() {
       </div>
 
       {/* grain sutil via pseudo */}
-      <div className="absolute inset-0 bg-gradient-to-b from-white/[0.03] to-transparent pointer-events-none" />
+      <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-white/[0.03] to-transparent" />
 
       {/* hairline topo */}
       <div className="relative h-px w-full bg-gradient-to-r from-transparent via-[var(--gold)]/25 to-transparent" />
 
-      <div className="relative mx-auto grid max-w-6xl gap-10 px-6 py-12 text-sm sm:grid-cols-12 lg:py-14">
+      <div className="relative mx-auto grid max-w-6xl gap-10 px-6 py-10 text-sm sm:grid-cols-12 lg:py-14">
         {/* Col 1 – Identidade */}
         <div className="sm:col-span-5">
           <div className="flex items-center gap-3">
-            <span className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--gold)]/40 bg-white/5 font-display text-sm font-bold text-[var(--gold)]">
-              512
+            <span className="relative flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full border-[1.5px] border-[var(--gold)] bg-[var(--crimson-deep)] shadow-sm transition-transform group-hover:scale-[1.02] sm:h-11 sm:w-11">
+              <Image
+                src="/logo-jba.png"
+                alt="Brasão Capítulo José Barreto de Albuquerque N°512"
+                width={44}
+                height={44}
+                className="h-full w-full object-contain p-1"
+                priority
+              />
             </span>
             <p className="font-display text-[15px] font-semibold leading-tight">
               Capítulo José Barreto
@@ -35,13 +44,15 @@ export default function Footer() {
               </span>
             </p>
           </div>
-          <p className="mt-4 max-w-[32ch] text-[13px] leading-relaxed text-white/70">
+
+          <p className="mt-4 hidden max-w-[32ch] text-[13px] leading-relaxed text-white/70 sm:block">
             Formando jovens líderes através do civismo, da fraternidade e do
             caráter — há {idade} anos servindo nossa comunidade.
           </p>
-          <div className="mt-5 flex flex-wrap items-center gap-6">
+
+          <div className="mt-6 flex flex-wrap items-center gap-4 sm:mt-5 sm:gap-6">
             <p className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--gold-light)]/90">
-              <span className="h-px w-6 bg-[var(--gold)]/40" />
+              <span className="h-px w-4 bg-[var(--gold)]/40 sm:w-6" />
               {idade} anos · {gestoes} gestões
             </p>
 
@@ -80,8 +91,10 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Col 2 – Navegação */}
-        <nav aria-label="Rodapé" className="sm:col-span-3 sm:col-start-7">
+        <nav
+          aria-label="Rodapé"
+          className="hidden sm:col-span-3 sm:col-start-7 sm:block"
+        >
           <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/50">
             Navegação
           </p>
@@ -113,8 +126,7 @@ export default function Footer() {
           </ul>
         </nav>
 
-        {/* Col 3 – Conversão */}
-        <div className="sm:col-span-3">
+        <div className="hidden sm:col-span-3 sm:block">
           <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/50">
             Faça parte
           </p>
@@ -124,7 +136,7 @@ export default function Footer() {
           </p>
           <Link
             href="/quero-fazer-parte"
-            className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-[var(--gold)]/30 bg-white/5 px-4 py-2 text-[13px] font-medium text-[var(--gold-light)] backdrop-blur transition-colors hover:bg-[var(--gold)] hover:text-[var(--crimson-deep)] hover:border-[var(--gold)]"
+            className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-[var(--gold)]/30 bg-white/5 px-4 py-2 text-[13px] font-medium text-[var(--gold-light)] backdrop-blur transition-colors hover:border-[var(--gold)] hover:bg-[var(--gold)] hover:text-[var(--crimson-deep)]"
           >
             Quero fazer parte <span aria-hidden>→</span>
           </Link>
@@ -137,7 +149,7 @@ export default function Footer() {
             Capítulo José Barreto de Albuquerque N°512 — Ordem DeMolay ·
             Juventude, liderança e caráter.
           </p>
-          <p className="text-white/30">
+          <p className="hidden text-white/30 sm:block">
             Site institucional · Atualizado periodicamente
           </p>
         </div>

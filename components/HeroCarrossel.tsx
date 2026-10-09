@@ -29,7 +29,7 @@ export default function HeroCarrossel({ fotos }: { fotos: Foto[] }) {
 
   useEffect(() => {
     if (count <= 1) return;
-    timerRef.current = setInterval(goNext, 7000);
+    timerRef.current = setInterval(goNext, 3000);
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
@@ -45,7 +45,7 @@ export default function HeroCarrossel({ fotos }: { fotos: Foto[] }) {
   const resume = useCallback(() => {
     if (count <= 1) return;
     if (timerRef.current) clearInterval(timerRef.current);
-    timerRef.current = setInterval(goNext, 7000);
+    timerRef.current = setInterval(goNext, 3000);
   }, [count, goNext]);
 
   if (count === 0) {
