@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { put } from "@vercel/blob";
 import { authOptions } from "@/lib/auth";
+import { registrarAuditoria, atorDeSessao, ipDeHeaders } from "@/lib/auditoria";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -19,7 +20,7 @@ async function requireDiretoria() {
   const session = await getServerSession(authOptions);
   const papel = (session?.user as unknown as { papel?: string })?.papel;
   if (!session?.user) return NextResponse.json({ erro: "Não autenticado" }, { status: 401 });
-  if (papel !== "DIRETORIA") return NextResponse.json({ erro: "Acesso restrito à diretoria" }, { status: 403 });
+  if (papel !== "DIRETORIA" && papel !== "MASTER") return NextResponse.json({ erro: "Acesso restrito à diretoria" }, { status: 403 });
   return null;
 }
 
@@ -107,6 +108,15 @@ export async function POST(request: Request) {
       access: "public",
       contentType: file.type,
       addRandomSuffix: false,
+    });
+
+    const session = await getServerSession(authOptions);
+    await registrarAuditoria({
+      ...atorDeSessao(session),
+      acao: "UPLOAD",
+      entidade: "arquivo",
+      detalhe: `Enviou arquivo ${safeName} (${(file.size / 1024).toFixed(0)}KB)`,
+      ip: ipDeHeaders(request.headers),
     });
 
     return NextResponse.json({ url: blob.url, pathname: blob.pathname }, { status: 201 });

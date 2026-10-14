@@ -23,8 +23,8 @@ function isoToDateInput(iso: string | null | undefined): string {
   return d.toISOString().slice(0, 10);
 }
 
-export default function PainelFotos({ papel }: { papel?: "DIRETORIA" | "COMISSAO" } = {}) {
-  const isDiretoria = papel === "DIRETORIA";
+export default function PainelFotos({ papel }: { papel?: "MASTER" | "DIRETORIA" | "COMISSAO" } = {}) {
+  const isDiretoria = papel === "DIRETORIA" || papel === "MASTER";
   const [fotos, setFotos] = useState<Foto[] | null>(null);
   const [previewUrl, setPreviewUrl] = useState("");
   const [erro, setErro] = useState<string | null>(null);

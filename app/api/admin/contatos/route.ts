@@ -9,7 +9,7 @@ async function requireContatoAccess() {
   const session = await getServerSession(authOptions);
   const papel = (session?.user as unknown as { papel?: string })?.papel;
   if (!session?.user) return NextResponse.json({ erro: "Não autenticado" }, { status: 401 });
-  if (papel !== "DIRETORIA" && papel !== "COMISSAO")
+  if (papel !== "DIRETORIA" && papel !== "COMISSAO" && papel !== "MASTER")
     return NextResponse.json({ erro: "Acesso restrito" }, { status: 403 });
   return null;
 }

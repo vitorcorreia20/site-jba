@@ -1,30 +1,23 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
-import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { requireMaster } from "@/lib/permissoes";
+import { registrarAuditoria, atorDeSessao, ipDeHeaders } from "@/lib/auditoria";
 
 export const dynamic = "force-dynamic";
-
-async function requireDiretoria() {
-  const session = await getServerSession(authOptions);
-  const papel = (session?.user as unknown as { papel?: string })?.papel;
-  if (!session?.user) return { error: NextResponse.json({ erro: "Não autenticado" }, { status: 401 }), session: null as unknown as NonNullable<typeof session> };
-  if (papel !== "DIRETORIA") return { error: NextResponse.json({ erro: "Acesso restrito à diretoria" }, { status: 403 }), session: null as unknown as NonNullable<typeof session> };
-  return { error: null, session };
-}
 
 const patchSchema = z.object({
   nome: z.string().trim().min(2, "Nome deve ter ao menos 2 caracteres").max(100).optional(),
   email: z.string().trim().toLowerCase().email("E-mail inválido").optional(),
   senha: z.string().min(6, "Senha deve ter ao menos 6 caracteres").max(72).optional(),
-  papel: z.enum(["DIRETORIA", "COMISSAO"]).optional(),
+  papel: z.enum(["MASTER", "DIRETORIA", "COMISSAO"]).optional(),
 });
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const { error, session } = await requireDiretoria();
-  if (error) return error;
+  const auth = await requireMaster();
+  if ("error" in auth) return auth.error;
+  const { session } = auth;
   const { id } = await params;
 
   let dados: unknown;
@@ -59,21 +52,25 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     }
   }
 
-  // Proteções: não rebaixar a si mesmo se for último DIRETORIA
-  if (papel !== undefined && existente.email === (session?.user?.email as string | undefined)) {
-    if (existente.papel === "DIRETORIA" && papel === "COMISSAO") {
-      const totalDiretoria = await prisma.adminUser.count({ where: { papel: "DIRETORIA" } });
-      if (totalDiretoria <= 1) {
-        return NextResponse.json({ erro: "Não é possível rebaixar o último administrador" }, { status: 400 });
-      }
+  const emailSessao = (session?.user?.email as string | undefined)?.toLowerCase();
+  const mexendoConsigo = emailSessao === existente.email.toLowerCase();
+
+  // Proteções do MASTER: nunca rebaixar/remover o último MASTER, nunca mexer em si
+  if (papel !== undefined && papel !== "MASTER" && existente.papel === "MASTER") {
+    const totalMaster = await prisma.adminUser.count({ where: { papel: "MASTER" } });
+    if (totalMaster <= 1) {
+      return NextResponse.json({ erro: "Não é possível rebaixar o último Master" }, { status: 400 });
     }
   }
-  // Se estiver trocando papel de outro DIRETORIA para COMISSAO e só há 1, bloquear
+  // Proteções legadas da DIRETORIA
   if (papel === "COMISSAO" && existente.papel === "DIRETORIA") {
     const totalDiretoria = await prisma.adminUser.count({ where: { papel: "DIRETORIA" } });
     if (totalDiretoria <= 1) {
       return NextResponse.json({ erro: "Deve haver ao menos um administrador (Diretoria)" }, { status: 400 });
     }
+  }
+  if (mexendoConsigo && papel !== undefined && papel !== existente.papel) {
+    return NextResponse.json({ erro: "Não é possível alterar o próprio papel" }, { status: 400 });
   }
 
   if (Object.keys(updates).length === 0) {
@@ -86,12 +83,22 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     select: { id: true, nome: true, email: true, papel: true, criadoEm: true },
   });
 
+  await registrarAuditoria({
+    ...atorDeSessao(session),
+    acao: "EDITAR",
+    entidade: "usuario",
+    entidadeId: usuario.id,
+    detalhe: `Editou usuário ${usuario.email} (campos: ${Object.keys(updates).join(", ")})`,
+    ip: ipDeHeaders(request.headers),
+  });
+
   return NextResponse.json(usuario);
 }
 
-export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const { error, session } = await requireDiretoria();
-  if (error) return error;
+export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const auth = await requireMaster();
+  if ("error" in auth) return auth.error;
+  const { session } = auth;
   const { id } = await params;
 
   const existente = await prisma.adminUser.findUnique({ where: { id } });
@@ -102,6 +109,13 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
     return NextResponse.json({ erro: "Não é possível remover a si mesmo" }, { status: 400 });
   }
 
+  if (existente.papel === "MASTER") {
+    const totalMaster = await prisma.adminUser.count({ where: { papel: "MASTER" } });
+    if (totalMaster <= 1) {
+      return NextResponse.json({ erro: "Deve haver ao menos um Master" }, { status: 400 });
+    }
+  }
+
   if (existente.papel === "DIRETORIA") {
     const totalDiretoria = await prisma.adminUser.count({ where: { papel: "DIRETORIA" } });
     if (totalDiretoria <= 1) {
@@ -110,5 +124,15 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
   }
 
   await prisma.adminUser.delete({ where: { id } });
+
+  await registrarAuditoria({
+    ...atorDeSessao(session),
+    acao: "REMOVER",
+    entidade: "usuario",
+    entidadeId: id,
+    detalhe: `Removeu usuário ${existente.email} [${existente.papel}]`,
+    ip: ipDeHeaders(request.headers),
+  });
+
   return NextResponse.json({ ok: true });
 }

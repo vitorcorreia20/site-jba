@@ -8,6 +8,21 @@ export default withAuth(
     const papel = token?.papel;
     const pathname = req.nextUrl.pathname;
 
+    // MASTER tem liberdade total — nenhuma restrição abaixo se aplica
+    if (papel === "MASTER") return NextResponse.next();
+
+    // Gestão de usuários, métricas e auditoria: só MASTER
+    const somenteMaster =
+      pathname.startsWith("/api/admin/usuarios") ||
+      pathname.startsWith("/api/admin/metricas") ||
+      pathname.startsWith("/api/admin/auditoria");
+    if (somenteMaster) {
+      return new NextResponse(JSON.stringify({ erro: "Acesso restrito ao Master" }), {
+        status: 403,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
     // API: COMISSAO (GESTOR) pode acessar solicitacoes, contatos e fotos (CRUD exceto DELETE); diretoria acessa tudo
     const isComissaoFotosDelete =
       papel === "COMISSAO" &&

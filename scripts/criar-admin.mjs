@@ -1,5 +1,5 @@
 // Cria (ou atualiza a senha de) o usuário do painel admin.
-// Uso: node scripts/criar-admin.mjs "Nome" email@exemplo.com "senha123" [DIRETORIA|COMISSAO]
+// Uso: node scripts/criar-admin.mjs "Nome" email@exemplo.com "senha123" [MASTER|DIRETORIA|COMISSAO]
 
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
@@ -25,7 +25,7 @@ if (!process.env.POSTGRES_PRISMA_URL && fs.existsSync(".env")) {
 const [, , nome, emailRaw, senha, papelRaw] = process.argv;
 
 if (!nome || !emailRaw || !senha) {
-  console.error('Uso: node scripts/criar-admin.mjs "Nome" email@exemplo.com "senha" [DIRETORIA|COMISSAO]');
+  console.error('Uso: node scripts/criar-admin.mjs "Nome" email@exemplo.com "senha" [MASTER|DIRETORIA|COMISSAO]');
   process.exit(1);
 }
 
@@ -33,9 +33,9 @@ const email = emailRaw.trim().toLowerCase();
 let papel = "COMISSAO";
 if (papelRaw) {
   const p = papelRaw.trim().toUpperCase();
-  if (p === "DIRETORIA" || p === "COMISSAO") papel = p;
+  if (p === "MASTER" || p === "DIRETORIA" || p === "COMISSAO") papel = p;
   else {
-    console.error('Papel deve ser DIRETORIA ou COMISSAO');
+    console.error('Papel deve ser MASTER, DIRETORIA ou COMISSAO');
     process.exit(1);
   }
 }

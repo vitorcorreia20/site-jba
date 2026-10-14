@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { del } from "@vercel/blob";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { registrarAuditoria, atorDeSessao, ipDeHeaders } from "@/lib/auditoria";
 
 function parseGestao(periodo: string): number {
   const m = periodo.match(/^(\d{4})\.([12])$/);
@@ -16,7 +17,7 @@ async function requireDiretoria() {
   const session = await getServerSession(authOptions);
   const papel = (session?.user as unknown as { papel?: string })?.papel;
   if (!session?.user) return NextResponse.json({ erro: "Não autenticado" }, { status: 401 });
-  if (papel !== "DIRETORIA") return NextResponse.json({ erro: "Acesso restrito à diretoria" }, { status: 403 });
+  if (papel !== "DIRETORIA" && papel !== "MASTER") return NextResponse.json({ erro: "Acesso restrito à diretoria" }, { status: 403 });
   return null;
 }
 
@@ -83,11 +84,21 @@ export async function PATCH(
     data: updateData,
   });
 
+  const session = await getServerSession(authOptions);
+  await registrarAuditoria({
+    ...atorDeSessao(session),
+    acao: "EDITAR",
+    entidade: "lideranca",
+    entidadeId: id,
+    detalhe: `Editou liderança ${atualizado.nome} (${atualizado.periodo}) (campos: ${Object.keys(updateData).join(", ")})`,
+    ip: ipDeHeaders(request.headers),
+  });
+
   return NextResponse.json(atualizado);
 }
 
 export async function DELETE(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const guard = await requireDiretoria();
@@ -95,6 +106,16 @@ export async function DELETE(
   const { id } = await params;
   const mestre = await prisma.mestreConselheiro.findUnique({ where: { id } });
   await prisma.mestreConselheiro.delete({ where: { id } });
+
+  const session = await getServerSession(authOptions);
+  await registrarAuditoria({
+    ...atorDeSessao(session),
+    acao: "REMOVER",
+    entidade: "lideranca",
+    entidadeId: id,
+    detalhe: mestre ? `Removeu liderança ${mestre.nome} (${mestre.periodo})` : "Removeu liderança",
+    ip: ipDeHeaders(request.headers),
+  });
   if (mestre?.fotoUrl && mestre.fotoUrl.includes("blob.vercel-storage.com")) {
     try {
       await del(mestre.fotoUrl);

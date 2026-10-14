@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { del } from "@vercel/blob";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { registrarAuditoria, atorDeSessao, ipDeHeaders } from "@/lib/auditoria";
 
 async function requireAuth() {
   const session = await getServerSession(authOptions);
@@ -14,7 +15,7 @@ async function requireAuth() {
 async function requireDiretoria() {
   const auth = await requireAuth();
   if ("error" in auth) return auth;
-  if (auth.papel !== "DIRETORIA") return { error: NextResponse.json({ erro: "Apenas Administração pode excluir fotos" }, { status: 403 }) };
+  if (auth.papel !== "DIRETORIA" && auth.papel !== "MASTER") return { error: NextResponse.json({ erro: "Apenas Administração pode excluir fotos" }, { status: 403 }) };
   return auth;
 }
 
@@ -67,11 +68,21 @@ export async function PATCH(
   if (!existente) return NextResponse.json({ erro: "Foto não encontrada" }, { status: 404 });
 
   const foto = await prisma.fotoAcao.update({ where: { id }, data: update });
+
+  await registrarAuditoria({
+    ...atorDeSessao(auth.session),
+    acao: "EDITAR",
+    entidade: "foto",
+    entidadeId: id,
+    detalhe: `Editou foto${foto.legenda ? `: ${foto.legenda}` : ""} (campos: ${Object.keys(update).join(", ")})`,
+    ip: ipDeHeaders(request.headers),
+  });
+
   return NextResponse.json(foto);
 }
 
 export async function DELETE(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const auth = await requireDiretoria();
@@ -80,6 +91,15 @@ export async function DELETE(
   const foto = await prisma.fotoAcao.findUnique({ where: { id } });
   if (!foto) return NextResponse.json({ erro: "Foto não encontrada" }, { status: 404 });
   await prisma.fotoAcao.delete({ where: { id } });
+
+  await registrarAuditoria({
+    ...atorDeSessao(auth.session),
+    acao: "REMOVER",
+    entidade: "foto",
+    entidadeId: id,
+    detalhe: foto.legenda ? `Removeu foto: ${foto.legenda}` : "Removeu foto sem legenda",
+    ip: ipDeHeaders(request.headers),
+  });
   // best-effort: tenta remover do Blob se for URL do Vercel Blob, senão ignora
   if (foto?.url && foto.url.includes("blob.vercel-storage.com")) {
     try {

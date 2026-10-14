@@ -12,7 +12,7 @@ type Contato = {
   criadoEm: string;
 };
 
-export default function PainelContatos({ papel }: { papel?: "DIRETORIA" | "COMISSAO" } = {}) {
+export default function PainelContatos({ papel }: { papel?: "MASTER" | "DIRETORIA" | "COMISSAO" } = {}) {
   const [contatos, setContatos] = useState<Contato[] | null>(null);
 
   function recarregar() {

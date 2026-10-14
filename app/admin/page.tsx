@@ -14,6 +14,7 @@ export default async function AdminPage() {
     redirect("/admin/login?callbackUrl=/admin");
   }
   const papel = (session.user as unknown as { papel?: string })?.papel ?? "COMISSAO";
+  const isMaster = papel === "MASTER";
   const isDiretoria = papel === "DIRETORIA";
 
   return (
@@ -28,12 +29,14 @@ export default async function AdminPage() {
               </h1>
               <span
                 className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide ${
-                  isDiretoria
-                    ? "bg-[var(--crimson)] text-white"
-                    : "bg-[var(--gold-faint)] text-[var(--crimson)] border border-[var(--gold-border)]"
+                  isMaster
+                    ? "bg-[var(--gold)] text-[var(--crimson-deep)]"
+                    : isDiretoria
+                      ? "bg-[var(--crimson)] text-white"
+                      : "bg-[var(--gold-faint)] text-[var(--crimson)] border border-[var(--gold-border)]"
                 }`}
               >
-                {isDiretoria ? "Administração" : "Gestor"}
+                {isMaster ? "Master" : isDiretoria ? "Administração" : "Gestor"}
               </span>
             </div>
             <p className="mt-2 truncate text-sm text-[var(--ink)]/60">
@@ -45,7 +48,7 @@ export default async function AdminPage() {
       </section>
 
       <section className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8">
-        <AdminPanel papel={papel as "DIRETORIA" | "COMISSAO"} emailAtual={session.user?.email ?? undefined} />
+        <AdminPanel papel={papel as "MASTER" | "DIRETORIA" | "COMISSAO"} emailAtual={session.user?.email ?? undefined} />
       </section>
     </div>
   );

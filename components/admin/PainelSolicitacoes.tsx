@@ -32,9 +32,9 @@ function formatTelefone(tel: string): string {
   return d;
 }
 
-export default function PainelSolicitacoes({ papel }: { papel?: "DIRETORIA" | "COMISSAO" } = {}) {
+export default function PainelSolicitacoes({ papel }: { papel?: "MASTER" | "DIRETORIA" | "COMISSAO" } = {}) {
   const [solicitacoes, setSolicitacoes] = useState<Solicitacao[] | null>(null);
-  const isAdmin = papel === "DIRETORIA";
+  const isAdmin = papel === "DIRETORIA" || papel === "MASTER";
 
   useEffect(() => {
     fetch("/api/admin/solicitacoes")

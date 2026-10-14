@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { registrarAuditoria, atorDeSessao, ipDeHeaders } from "@/lib/auditoria";
 
 export const dynamic = 'force-dynamic';
 
@@ -55,6 +56,15 @@ export async function POST(request: Request) {
       legenda: typeof dados.legenda === "string" ? dados.legenda.trim() || null : null,
       dataRealizada,
     },
+  });
+
+  await registrarAuditoria({
+    ...atorDeSessao(auth.session),
+    acao: "CRIAR",
+    entidade: "foto",
+    entidadeId: foto.id,
+    detalhe: foto.legenda ? `Publicou foto: ${foto.legenda}` : "Publicou foto sem legenda",
+    ip: ipDeHeaders(request.headers),
   });
 
   return NextResponse.json(foto, { status: 201 });

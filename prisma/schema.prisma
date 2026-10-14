@@ -9,6 +9,7 @@ datasource db {
 }
 
 enum PapelAdmin {
+  MASTER
   DIRETORIA
   COMISSAO
 }
@@ -120,4 +121,26 @@ model Contato {
   lido       Boolean  @default(false)
   realizado  Boolean  @default(false)
   criadoEm   DateTime @default(now())
+}
+
+// Trilha de auditoria: tudo que acontece no painel admin fica registrado.
+// Ações como texto livre para não travar a evolução (ex: LOGIN, LOGIN_FALHA,
+// CRIAR, EDITAR, REMOVER, ALTERAR_STATUS, UPLOAD).
+model Auditoria {
+  id         String   @id @default(cuid())
+  atorId     String?
+  atorNome   String?
+  atorEmail  String?
+  atorPapel  String?
+  acao       String
+  entidade   String
+  entidadeId String?
+  detalhe    String?
+  ip         String?
+  criadoEm   DateTime @default(now())
+
+  @@index([criadoEm])
+  @@index([acao])
+  @@index([entidade])
+  @@index([atorEmail])
 }

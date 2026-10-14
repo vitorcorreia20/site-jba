@@ -4,12 +4,13 @@ import { del } from "@vercel/blob";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
+import { registrarAuditoria, atorDeSessao, ipDeHeaders } from "@/lib/auditoria";
 
 async function requireDiretoria() {
   const session = await getServerSession(authOptions);
   const papel = (session?.user as unknown as { papel?: string })?.papel;
   if (!session?.user) return NextResponse.json({ erro: "Não autenticado" }, { status: 401 });
-  if (papel !== "DIRETORIA") return NextResponse.json({ erro: "Acesso restrito à diretoria" }, { status: 403 });
+  if (papel !== "DIRETORIA" && papel !== "MASTER") return NextResponse.json({ erro: "Acesso restrito à diretoria" }, { status: 403 });
   return null;
 }
 
@@ -85,6 +86,16 @@ export async function PATCH(
       include: { premios: { orderBy: { ordem: "asc" } } },
     });
 
+    const session = await getServerSession(authOptions);
+    await registrarAuditoria({
+      ...atorDeSessao(session),
+      acao: "EDITAR",
+      entidade: "membro",
+      entidadeId: membro.id,
+      detalhe: `Editou membro ${membro.nome} [#${membro.idDemolay}]`,
+      ip: ipDeHeaders(request.headers),
+    });
+
     return NextResponse.json(membro);
   } catch (e: unknown) {
     const err = e as { code?: string };
@@ -99,7 +110,7 @@ export async function PATCH(
 }
 
 export async function DELETE(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const guard = await requireDiretoria();
@@ -110,6 +121,16 @@ export async function DELETE(
     include: { premios: true },
   });
   await prisma.membro.delete({ where: { id } });
+
+  const session = await getServerSession(authOptions);
+  await registrarAuditoria({
+    ...atorDeSessao(session),
+    acao: "REMOVER",
+    entidade: "membro",
+    entidadeId: id,
+    detalhe: membro ? `Removeu membro ${membro.nome} [#${membro.idDemolay}]` : "Removeu membro",
+    ip: ipDeHeaders(request.headers),
+  });
   // best-effort: limpa blobs do membro e prêmios (sequencial, ignora externos)
   const urls: string[] = [];
   if (membro?.fotoUrl && membro.fotoUrl.includes("blob.vercel-storage.com")) urls.push(membro.fotoUrl);

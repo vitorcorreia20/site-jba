@@ -7,10 +7,22 @@ import PainelLiderancas from "./PainelLiderancas";
 import PainelFotos from "./PainelFotos";
 import PainelContatos from "./PainelContatos";
 import PainelUsuarios from "./PainelUsuarios";
+import PainelMetricas from "./PainelMetricas";
+import PainelAuditoria from "./PainelAuditoria";
+
+const abasMaster = [
+  { id: "fotos", label: "Fotos de ações" },
+  { id: "usuarios", label: "Usuários" },
+  { id: "membros", label: "Membros" },
+  { id: "solicitacoes", label: "Solicitações" },
+  { id: "contatos", label: "Contatos" },
+  { id: "liderancas", label: "Lideranças" },
+  { id: "metricas", label: "Métricas" },
+  { id: "auditoria", label: "Auditoria" },
+] as const;
 
 const abasDiretoria = [
   { id: "fotos", label: "Fotos de ações" },
-  { id: "usuarios", label: "Usuários" },
   { id: "membros", label: "Membros" },
   { id: "solicitacoes", label: "Solicitações" },
   { id: "contatos", label: "Contatos" },
@@ -23,7 +35,7 @@ const abasComissao = [
   { id: "fotos", label: "Fotos de ações" },
 ] as const;
 
-type Papel = "DIRETORIA" | "COMISSAO";
+type Papel = "MASTER" | "DIRETORIA" | "COMISSAO";
 type Aba = { id: string; label: string };
 
 function itemAbaClass(ativa: boolean) {
@@ -65,14 +77,16 @@ function ListaAbas({
 }
 
 export default function AdminPanel({ papel, emailAtual }: { papel: Papel; emailAtual?: string }) {
+  const isMaster = papel === "MASTER";
   const isDiretoria = papel === "DIRETORIA";
-  const abas = isDiretoria ? abasDiretoria : abasComissao;
-  const [abaAtiva, setAbaAtiva] = useState<string>(isDiretoria ? "fotos" : "solicitacoes");
+  const isDiretoriaOuMaster = isDiretoria || isMaster;
+  const abas = isMaster ? abasMaster : isDiretoria ? abasDiretoria : abasComissao;
+  const [abaAtiva, setAbaAtiva] = useState<string>(papel === "COMISSAO" ? "solicitacoes" : "fotos");
   const [menuAberto, setMenuAberto] = useState(false);
 
   useEffect(() => {
-    setAbaAtiva(isDiretoria ? "fotos" : "solicitacoes");
-  }, [isDiretoria]);
+    setAbaAtiva(papel === "COMISSAO" ? "solicitacoes" : "fotos");
+  }, [papel]);
 
   const fecharMenu = useCallback(() => setMenuAberto(false), []);
 
@@ -167,21 +181,29 @@ export default function AdminPanel({ papel, emailAtual }: { papel: Papel; emailA
 
       {/* Conteúdo */}
       <div className="rounded-[18px] border border-[var(--ink-faint)] bg-white p-4 shadow-soft sm:p-6 lg:p-8">
-        {!isDiretoria && (
+        {papel === "COMISSAO" && (
           <p className="mb-4 rounded-[12px] border border-[var(--gold-border)] bg-[var(--gold-faint)] px-3 py-2 text-xs font-medium leading-relaxed text-[var(--crimson)] sm:rounded-full">
             Acesso de gestor: solicitações, contatos e fotos de ações (adicionar e editar). Exclusão
             apenas pela Administração. Para editar membros/usuários/lideranças, solicite Administração
             (Diretoria).
           </p>
         )}
+        {isDiretoria && (
+          <p className="mb-4 rounded-[12px] border border-[var(--ink-faint)] bg-[var(--paper-2)] px-3 py-2 text-xs leading-relaxed text-[var(--ink)]/60">
+            Gestão de usuários, métricas e auditoria são exclusivas do Master. Para criar um acesso,
+            solicite ao Master.
+          </p>
+        )}
 
         <div role="tabpanel" id={`painel-${abaAtiva}`} aria-live="polite">
           {abaAtiva === "solicitacoes" && <PainelSolicitacoes papel={papel} />}
-          {(isDiretoria || papel === "COMISSAO") && abaAtiva === "contatos" && <PainelContatos papel={papel} />}
-          {(isDiretoria || papel === "COMISSAO") && abaAtiva === "fotos" && <PainelFotos papel={papel} />}
-          {isDiretoria && abaAtiva === "membros" && <PainelMembros />}
-          {isDiretoria && abaAtiva === "liderancas" && <PainelLiderancas />}
-          {isDiretoria && abaAtiva === "usuarios" && <PainelUsuarios emailAtual={emailAtual} />}
+          {abaAtiva === "contatos" && <PainelContatos papel={papel} />}
+          {abaAtiva === "fotos" && <PainelFotos papel={papel} />}
+          {isDiretoriaOuMaster && abaAtiva === "membros" && <PainelMembros />}
+          {isDiretoriaOuMaster && abaAtiva === "liderancas" && <PainelLiderancas />}
+          {isMaster && abaAtiva === "usuarios" && <PainelUsuarios emailAtual={emailAtual} />}
+          {isMaster && abaAtiva === "metricas" && <PainelMetricas />}
+          {isMaster && abaAtiva === "auditoria" && <PainelAuditoria />}
         </div>
       </div>
     </div>

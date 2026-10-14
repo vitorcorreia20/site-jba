@@ -2,7 +2,7 @@
 
 import { useEffect, useState, FormEvent } from "react";
 
-type Papel = "DIRETORIA" | "COMISSAO";
+type Papel = "MASTER" | "DIRETORIA" | "COMISSAO";
 
 type Usuario = {
   id: string;
@@ -13,6 +13,7 @@ type Usuario = {
 };
 
 function labelPapel(p: Papel) {
+  if (p === "MASTER") return "Master";
   return p === "DIRETORIA" ? "Administração" : "Gestor";
 }
 
@@ -181,7 +182,7 @@ export default function PainelUsuarios({ emailAtual }: { emailAtual?: string }) 
       <div className="rounded-[16px] border border-[var(--ink-faint)] bg-[var(--paper)] p-4 sm:p-5">
         <h2 className="font-display text-[15px] font-semibold text-[var(--crimson)]">Cadastrar usuário</h2>
         <p className="text-xs leading-relaxed text-[var(--ink)]/50">
-          Crie acessos de <strong>Administração</strong> (acesso total) ou <strong>Gestor</strong> (solicitações, contatos e fotos). E-mail será normalizado em minúsculas.
+          Crie acessos de <strong>Master</strong> (acesso total + usuários, métricas e auditoria), <strong>Administração</strong> ou <strong>Gestor</strong>. E-mail será normalizado em minúsculas.
         </p>
         <form onSubmit={handleCreate} className="mt-4 space-y-3">
           <div>
@@ -224,11 +225,12 @@ export default function PainelUsuarios({ emailAtual }: { emailAtual?: string }) 
               onChange={(e) => setPapel(e.target.value as Papel)}
               className="mt-1.5 w-full rounded-[12px] border border-[var(--ink-faint)] bg-white px-3 py-2.5 text-sm focus:border-[var(--gold)] focus:outline-none focus:ring-2 focus:ring-[var(--gold-faint)]"
             >
+              <option value="MASTER">Master — acesso total + usuários, métricas e auditoria</option>
               <option value="DIRETORIA">Administração — acesso total</option>
               <option value="COMISSAO">Gestor — solicitações, contatos e fotos</option>
             </select>
             <p className="mt-1.5 text-[11px] leading-relaxed text-[var(--ink)]/40">
-              Gestor acessa Solicitações, Contatos e Fotos de ações (criar/editar; excluir só Administração). Administração gerencia tudo, inclusive usuários.
+              Gestor acessa Solicitações, Contatos e Fotos de ações (criar/editar; excluir só Administração). Administração gerencia o conteúdo, mas não usuários. Só o Master gerencia usuários.
             </p>
           </div>
 
@@ -260,9 +262,11 @@ export default function PainelUsuarios({ emailAtual }: { emailAtual?: string }) 
                       <span className="truncate font-medium text-[var(--ink)]">{u.nome}</span>
                       <span
                         className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide ${
-                          u.papel === "DIRETORIA"
-                            ? "bg-[var(--crimson)] text-white"
-                            : "bg-[var(--gold-faint)] text-[var(--crimson)] border border-[var(--gold-border)]"
+                          u.papel === "MASTER"
+                            ? "bg-[var(--gold)] text-[var(--crimson-deep)]"
+                            : u.papel === "DIRETORIA"
+                              ? "bg-[var(--crimson)] text-white"
+                              : "bg-[var(--gold-faint)] text-[var(--crimson)] border border-[var(--gold-border)]"
                         }`}
                       >
                         {labelPapel(u.papel)}
@@ -356,6 +360,7 @@ export default function PainelUsuarios({ emailAtual }: { emailAtual?: string }) 
                   onChange={(e) => setEditPapel(e.target.value as Papel)}
                   className="mt-1.5 w-full rounded-[12px] border border-[var(--ink-faint)] bg-white px-3 py-2.5 text-sm focus:border-[var(--gold)] focus:outline-none focus:ring-2 focus:ring-[var(--gold-faint)]"
                 >
+                  <option value="MASTER">Master</option>
                   <option value="DIRETORIA">Administração</option>
                   <option value="COMISSAO">Gestor</option>
                 </select>
@@ -395,7 +400,7 @@ export default function PainelUsuarios({ emailAtual }: { emailAtual?: string }) 
             <p className="mt-2 break-words text-sm leading-relaxed text-[var(--ink-soft)]">
               Digite exatamente <span className="font-semibold text-[var(--ink)]">{removerAlvo.nome}</span> para remover{" "}
               <span className="rounded-full bg-[var(--ink)] px-2 py-0.5 text-xs font-bold text-white break-all">{removerAlvo.email}</span>{" "}
-              <span className={`rounded-full px-2 py-0.5 text-[11px] font-bold uppercase ${removerAlvo.papel === "DIRETORIA" ? "bg-[var(--crimson)] text-white" : "bg-[var(--gold-faint)] text-[var(--crimson)] border border-[var(--gold-border)]"}`}>
+              <span className={`rounded-full px-2 py-0.5 text-[11px] font-bold uppercase ${removerAlvo.papel === "MASTER" ? "bg-[var(--gold)] text-[var(--crimson-deep)]" : removerAlvo.papel === "DIRETORIA" ? "bg-[var(--crimson)] text-white" : "bg-[var(--gold-faint)] text-[var(--crimson)] border border-[var(--gold-border)]"}`}>
                 {labelPapel(removerAlvo.papel)}
               </span>
               .

@@ -2,6 +2,7 @@ import { type NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
+import { registrarAuditoria } from "@/lib/auditoria";
 
 export const authOptions: NextAuthOptions = {
   session: { strategy: "jwt" },
@@ -32,18 +33,50 @@ export const authOptions: NextAuthOptions = {
         email: { label: "E-mail", type: "email" },
         senha: { label: "Senha", type: "password" },
       },
-      async authorize(credentials: Record<"email" | "senha", string> | undefined) {
+      async authorize(credentials: Record<"email" | "senha", string> | undefined, req?: { headers?: Record<string, string | string[] | undefined> }) {
         if (!credentials?.email || !credentials?.senha) return null;
 
         const emailNormalizado = credentials.email.trim().toLowerCase();
+        const fwd = req?.headers?.["x-forwarded-for"];
+        const ip = (Array.isArray(fwd) ? fwd[0] : fwd)?.split(",")[0]?.trim() || null;
 
         const usuario = await prisma.adminUser.findUnique({
           where: { email: emailNormalizado },
         });
-        if (!usuario) return null;
+        if (!usuario) {
+          await registrarAuditoria({
+            acao: "LOGIN_FALHA",
+            entidade: "sessao",
+            detalhe: `Tentativa com e-mail inexistente: ${emailNormalizado}`,
+            ip,
+          });
+          return null;
+        }
 
         const senhaValida = await bcrypt.compare(credentials.senha, usuario.senhaHash);
-        if (!senhaValida) return null;
+        if (!senhaValida) {
+          await registrarAuditoria({
+            acao: "LOGIN_FALHA",
+            entidade: "sessao",
+            detalhe: `Senha incorreta para ${usuario.email}`,
+            atorId: usuario.id,
+            atorNome: usuario.nome,
+            atorEmail: usuario.email,
+            ip,
+          });
+          return null;
+        }
+
+        await registrarAuditoria({
+          acao: "LOGIN",
+          entidade: "sessao",
+          detalhe: `${usuario.nome} entrou no painel`,
+          atorId: usuario.id,
+          atorNome: usuario.nome,
+          atorEmail: usuario.email,
+          atorPapel: usuario.papel,
+          ip,
+        });
 
         return {
           id: usuario.id,
