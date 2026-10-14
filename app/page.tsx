@@ -282,10 +282,17 @@ export default async function HomePage() {
           )}
 
           {fotos.length > 7 && (
-            <p className="mt-6 text-center text-xs text-[var(--stone)]">
-              Mostrando 7 de {fotos.length} registros · todos continuam no banco e
-              podem ser exibidos com paginação futura.
-            </p>
+            <div className="mt-8 text-center">
+              <p className="text-xs text-[var(--stone)]">
+                Mostrando 7 de {fotos.length} registros
+              </p>
+              <Link
+                href="/galeria"
+                className="mt-3 inline-flex items-center gap-2 rounded-full bg-[var(--crimson)] px-7 py-3 text-sm font-semibold text-white shadow-soft transition-all hover:bg-[var(--crimson-deep)] hover:-translate-y-px hover:shadow-strong"
+              >
+                Acessar Galeria <span aria-hidden>→</span>
+              </Link>
+            </div>
           )}
         </div>
       </section>

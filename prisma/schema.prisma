@@ -90,11 +90,25 @@ model SolicitacaoAdmissao {
 
 // Fotos de ações do capítulo exibidas na Home
 model FotoAcao {
-  id            String   @id @default(cuid())
+  id            String        @id @default(cuid())
   url           String
   legenda       String?
-  dataRealizada DateTime @default(now())
-  criadoEm      DateTime @default(now())
+  dataRealizada DateTime      @default(now())
+  criadoEm      DateTime      @default(now())
+  curtidas      CurtidaFoto[]
+}
+
+// Curtida pública por visitante anônimo (1 curtida por foto por visitante)
+model CurtidaFoto {
+  id          String   @id @default(cuid())
+  fotoAcaoId  String
+  fotoAcao    FotoAcao @relation(fields: [fotoAcaoId], references: [id], onDelete: Cascade)
+  visitanteId String
+  criadoEm    DateTime @default(now())
+
+  @@unique([fotoAcaoId, visitanteId])
+  @@index([fotoAcaoId])
+  @@index([visitanteId])
 }
 
 // Mensagem enviada pelo formulário de Contato (nome/telefone/descricao)
