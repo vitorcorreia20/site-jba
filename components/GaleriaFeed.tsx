@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { FotoGaleria } from "@/lib/galeria";
 
 const TAKE = 21;
@@ -48,55 +48,29 @@ export default function GaleriaFeed({
   const [pagina, setPagina] = useState(1);
   const [hasMore, setHasMore] = useState(inicialHasMore);
   const [carregandoMais, setCarregandoMais] = useState(false);
-  const [selecionadaId, setSelecionadaId] = useState<string | null>(null);
   const [curtindo, setCurtindo] = useState<Set<string>>(new Set());
   const [bigHeartId, setBigHeartId] = useState<string | null>(null);
-  const [copiado, setCopiado] = useState(false);
+  const [copiadoId, setCopiadoId] = useState<string | null>(null);
+  const [destaqueId, setDestaqueId] = useState<string | null>(null);
   const sentinelaRef = useRef<HTMLDivElement | null>(null);
+  const cartoesRef = useRef<Map<string, HTMLElement>>(new Map());
 
-  const selecionadaIndex = useMemo(
-    () => fotos.findIndex((f) => f.id === selecionadaId),
-    [fotos, selecionadaId]
-  );
-  const selecionada = selecionadaIndex >= 0 ? fotos[selecionadaIndex] : null;
-
-  // Deep-link ?foto=id — abre o modal ao entrar / compartilhar
+  // Deep-link ?foto=id — rola até o card e destaca
   useEffect(() => {
     const id = new URLSearchParams(window.location.search).get("foto");
-    if (id && fotos.some((f) => f.id === id)) {
-      setSelecionadaId(id);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (!id) return;
+    const tentarDestacar = (tentativa: number) => {
+      const el = cartoesRef.current.get(id);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+        setDestaqueId(id);
+        window.setTimeout(() => setDestaqueId((d) => (d === id ? null : d)), 2600);
+      } else if (tentativa < 10) {
+        window.setTimeout(() => tentarDestacar(tentativa + 1), 400);
+      }
+    };
+    tentarDestacar(0);
   }, []);
-
-  // Sincroniza URL com modal aberto
-  useEffect(() => {
-    const url = new URL(window.location.href);
-    if (selecionadaId) {
-      url.searchParams.set("foto", selecionadaId);
-    } else {
-      url.searchParams.delete("foto");
-    }
-    window.history.replaceState(null, "", url.toString());
-  }, [selecionadaId]);
-
-  // Trava scroll + teclado no modal
-  useEffect(() => {
-    if (!selecionada) return;
-    document.body.style.overflow = "hidden";
-    const aoTeclar = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setSelecionadaId(null);
-      if (e.key === "ArrowRight")
-        setSelecionadaId(fotos[Math.min(fotos.length - 1, selecionadaIndex + 1)]?.id ?? null);
-      if (e.key === "ArrowLeft")
-        setSelecionadaId(fotos[Math.max(0, selecionadaIndex - 1)]?.id ?? null);
-    };
-    window.addEventListener("keydown", aoTeclar);
-    return () => {
-      document.body.style.overflow = "";
-      window.removeEventListener("keydown", aoTeclar);
-    };
-  }, [selecionada, selecionadaIndex, fotos]);
 
   const carregarMais = useCallback(async () => {
     if (!hasMore || carregandoMais) return;
@@ -193,8 +167,8 @@ export default function GaleriaFeed({
     }
     try {
       await navigator.clipboard.writeText(url);
-      setCopiado(true);
-      window.setTimeout(() => setCopiado(false), 2000);
+      setCopiadoId(foto.id);
+      window.setTimeout(() => setCopiadoId((id) => (id === foto.id ? null : id)), 2000);
     } catch {
       window.prompt("Copie o link da foto:", url);
     }
@@ -215,52 +189,104 @@ export default function GaleriaFeed({
   return (
     <>
       <p className="mb-4 text-xs text-[var(--stone)]">
-        Mostrando {fotos.length} de {total} fotos · toque para ampliar, duplo toque para curtir
+        Mostrando {fotos.length} de {total} fotos · duplo toque na foto para curtir
       </p>
 
-      <div className="grid grid-cols-3 gap-1 sm:gap-3">
+      <div className="mx-auto max-w-xl space-y-6">
         {fotos.map((foto) => (
-          <button
+          <article
             key={foto.id}
-            type="button"
-            onClick={() => setSelecionadaId(foto.id)}
-            onDoubleClick={() => curtirComAnimacao(foto)}
-            aria-label={foto.legenda ? `Ampliar foto: ${foto.legenda}` : "Ampliar foto da galeria"}
-            className="group relative aspect-square overflow-hidden bg-[var(--crimson)]/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] sm:rounded-[14px] sm:border sm:border-[var(--ink-faint)] sm:shadow-soft"
+            ref={(el) => {
+              if (el) cartoesRef.current.set(foto.id, el);
+              else cartoesRef.current.delete(foto.id);
+            }}
+            aria-label={foto.legenda ? `Foto: ${foto.legenda}` : "Foto da galeria"}
+            className={`overflow-hidden rounded-[18px] border bg-white shadow-soft transition-shadow ${
+              destaqueId === foto.id
+                ? "border-[var(--gold)] ring-2 ring-[var(--gold)]/60"
+                : "border-[var(--ink-faint)]"
+            }`}
           >
-            <Image
-              src={foto.url}
-              alt={foto.legenda ?? "Foto de ação do capítulo"}
-              fill
-              sizes="(max-width: 640px) 33vw, (max-width: 1024px) 30vw, 360px"
-              className="object-cover transition-transform duration-500 group-hover:scale-[1.04]"
-              loading="lazy"
-            />
-            {/* selo de curtido */}
-            {foto.curtido && (
-              <span className="absolute right-1.5 top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-black/50 text-red-400 backdrop-blur">
-                <Coracao preenchido className="h-3.5 w-3.5" />
+            {/* cabeçalho */}
+            <div className="flex items-center gap-3 px-4 py-3 sm:px-5">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--crimson)] font-display text-xs font-black text-[var(--gold)]">
+                512
               </span>
-            )}
-            {/* overlay hover (desktop) */}
-            <span className="pointer-events-none absolute inset-0 hidden items-center justify-center gap-2 bg-black/45 text-white opacity-0 transition-opacity duration-200 group-hover:opacity-100 sm:flex">
-              <Coracao preenchido={foto.curtido} className="h-5 w-5" />
-              <span className="text-sm font-bold">{foto.totalCurtidas}</span>
-            </span>
-            {/* contador mobile */}
-            <span className="absolute bottom-1.5 left-1.5 flex items-center gap-1 rounded-full bg-black/55 px-2 py-0.5 text-[11px] font-semibold text-white backdrop-blur sm:hidden">
-              <Coracao preenchido={foto.curtido} className="h-3 w-3" />
-              {foto.totalCurtidas}
-            </span>
-            {/* coração gigante do duplo-toque */}
-            {bigHeartId === foto.id && (
-              <span className="pointer-events-none absolute inset-0 flex items-center justify-center">
-                <span className="animate-ping-once text-white drop-shadow-lg">
-                  <Coracao preenchido className="h-16 w-16" />
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-bold text-[var(--crimson-deep)]">
+                  Capítulo JBA N°512
+                </p>
+                <p className="text-xs text-[var(--stone)]">{formatarData(foto.dataRealizada)}</p>
+              </div>
+            </div>
+
+            {/* foto */}
+            <div
+              className="relative aspect-[4/5] w-full cursor-pointer select-none bg-[var(--crimson)]/5"
+              onDoubleClick={() => curtirComAnimacao(foto)}
+              title="Duplo toque para curtir"
+            >
+              <Image
+                src={foto.url}
+                alt={foto.legenda ?? "Foto de ação do capítulo"}
+                fill
+                sizes="(max-width: 640px) 100vw, 576px"
+                className="object-cover"
+                loading="lazy"
+              />
+              {bigHeartId === foto.id && (
+                <span className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                  <span className="animate-ping-once text-white drop-shadow-lg">
+                    <Coracao preenchido className="h-20 w-20" />
+                  </span>
                 </span>
-              </span>
-            )}
-          </button>
+              )}
+            </div>
+
+            {/* ações */}
+            <div className="px-4 pb-4 pt-3 sm:px-5">
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={() => alternarCurtida(foto)}
+                  disabled={curtindo.has(foto.id)}
+                  aria-pressed={foto.curtido}
+                  aria-label={foto.curtido ? "Descurtir foto" : "Curtir foto"}
+                  className={`flex h-10 w-10 items-center justify-center rounded-full transition active:scale-90 ${
+                    foto.curtido
+                      ? "text-red-500"
+                      : "text-[var(--ink)] hover:bg-red-50 hover:text-red-500"
+                  } disabled:opacity-50`}
+                >
+                  <Coracao preenchido={foto.curtido} className="h-6 w-6" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => compartilhar(foto)}
+                  aria-label="Compartilhar foto"
+                  className="flex h-10 w-10 items-center justify-center rounded-full text-[var(--ink)] transition hover:bg-black/5 active:scale-90"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5" aria-hidden="true">
+                    <path d="M4 12v8a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-8" />
+                    <path d="M16 6l-4-4-4 4" />
+                    <path d="M12 2v13" />
+                  </svg>
+                </button>
+              </div>
+              <p className="mt-1 text-sm font-bold text-[var(--ink)]">
+                {foto.totalCurtidas} curtida{foto.totalCurtidas === 1 ? "" : "s"}
+              </p>
+              {foto.legenda && (
+                <p className="mt-1.5 text-[14px] leading-relaxed text-[var(--ink)]">
+                  <span className="mr-2 font-bold text-[var(--crimson-deep)]">cap_jba512</span>
+                  {foto.legenda}
+                </p>
+              )}
+              {copiadoId === foto.id && (
+                <p className="mt-2 text-xs font-medium text-emerald-600">Link copiado!</p>
+              )}
+            </div>
+          </article>
         ))}
       </div>
 
@@ -273,130 +299,6 @@ export default function GaleriaFeed({
         <p className="mt-4 text-center text-xs text-[var(--stone)]">
           Você viu todas as {total} fotos.
         </p>
-      )}
-
-      {/* ============ MODAL estilo Instagram ============ */}
-      {selecionada && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-label={selecionada.legenda ?? "Foto ampliada da galeria"}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-3 backdrop-blur-sm sm:p-6"
-          onClick={() => setSelecionadaId(null)}
-        >
-          <div
-            className="relative grid max-h-[92vh] w-full max-w-4xl overflow-hidden rounded-[18px] bg-white shadow-strong md:grid-cols-12"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* foto */}
-            <div className="relative aspect-square bg-black md:col-span-7 md:aspect-auto md:min-h-[480px]">
-              <Image
-                src={selecionada.url}
-                alt={selecionada.legenda ?? "Foto de ação do capítulo"}
-                fill
-                sizes="(max-width: 768px) 100vw, 60vw"
-                className="object-contain bg-black"
-                priority
-              />
-              {fotos.length > 1 && (
-                <>
-                  <button
-                    type="button"
-                    aria-label="Foto anterior"
-                    onClick={() =>
-                      setSelecionadaId(fotos[Math.max(0, selecionadaIndex - 1)]?.id ?? null)
-                    }
-                    disabled={selecionadaIndex <= 0}
-                    className="absolute left-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur transition hover:bg-black/70 disabled:opacity-30"
-                  >
-                    ‹
-                  </button>
-                  <button
-                    type="button"
-                    aria-label="Próxima foto"
-                    onClick={() =>
-                      setSelecionadaId(
-                        fotos[Math.min(fotos.length - 1, selecionadaIndex + 1)]?.id ?? null
-                      )
-                    }
-                    disabled={selecionadaIndex >= fotos.length - 1}
-                    className="absolute right-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur transition hover:bg-black/70 disabled:opacity-30"
-                  >
-                    ›
-                  </button>
-                </>
-              )}
-            </div>
-
-            {/* lateral */}
-            <div className="flex flex-col p-5 sm:p-6 md:col-span-5">
-              <div className="flex items-center gap-3 border-b border-[var(--ink-faint)] pb-4">
-                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--crimson)] font-display text-xs font-black text-[var(--gold)]">
-                  512
-                </span>
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-bold text-[var(--crimson-deep)]">
-                    Capítulo JBA N°512
-                  </p>
-                  <p className="text-xs text-[var(--stone)]">{formatarData(selecionada.dataRealizada)}</p>
-                </div>
-                <button
-                  type="button"
-                  aria-label="Fechar"
-                  onClick={() => setSelecionadaId(null)}
-                  className="flex h-8 w-8 items-center justify-center rounded-full text-[var(--stone)] transition hover:bg-black/5 hover:text-black"
-                >
-                  ✕
-                </button>
-              </div>
-
-              {selecionada.legenda && (
-                <p className="mt-4 text-[14px] leading-relaxed text-[var(--ink)]">
-                  {selecionada.legenda}
-                </p>
-              )}
-
-              <div className="mt-4 flex items-center gap-3">
-                <button
-                  type="button"
-                  onClick={() => alternarCurtida(selecionada)}
-                  disabled={curtindo.has(selecionada.id)}
-                  aria-pressed={selecionada.curtido}
-                  aria-label={selecionada.curtido ? "Descurtir foto" : "Curtir foto"}
-                  className={`flex h-10 w-10 items-center justify-center rounded-full transition active:scale-90 ${
-                    selecionada.curtido
-                      ? "text-red-500"
-                      : "text-[var(--ink)] hover:bg-red-50 hover:text-red-500"
-                  } disabled:opacity-50`}
-                >
-                  <Coracao preenchido={selecionada.curtido} className="h-6 w-6" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => compartilhar(selecionada)}
-                  aria-label="Compartilhar foto"
-                  className="flex h-10 w-10 items-center justify-center rounded-full text-[var(--ink)] transition hover:bg-black/5 active:scale-90"
-                >
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5" aria-hidden="true">
-                    <path d="M4 12v8a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-8" />
-                    <path d="M16 6l-4-4-4 4" />
-                    <path d="M12 2v13" />
-                  </svg>
-                </button>
-              </div>
-              <p className="mt-1 text-sm font-bold text-[var(--ink)]">
-                {selecionada.totalCurtidas} curtida{selecionada.totalCurtidas === 1 ? "" : "s"}
-              </p>
-              {copiado && (
-                <p className="mt-2 text-xs font-medium text-emerald-600">Link copiado!</p>
-              )}
-              <p className="mt-2 text-xs text-[var(--stone)]">
-                {selecionadaIndex + 1} de {fotos.length}
-                {total > fotos.length ? ` (carregando de ${total})` : ""}
-              </p>
-            </div>
-          </div>
-        </div>
       )}
 
       <style jsx>{`

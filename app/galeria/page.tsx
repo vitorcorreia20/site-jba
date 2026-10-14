@@ -68,7 +68,7 @@ export default async function GaleriaPage() {
             </h1>
             <p className="mt-2 max-w-prose text-[14px] leading-relaxed text-[var(--ink-soft)]">
               Todas as fotos das atividades do capítulo, das mais recentes às mais antigas.
-              Toque para ampliar e curta suas favoritas.
+              Curta e compartilhe direto no feed.
             </p>
           </div>
           {total > 0 && (
